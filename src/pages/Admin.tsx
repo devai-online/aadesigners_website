@@ -33,10 +33,72 @@ interface BlogPost {
   tags: string[];
 }
 
+// Login form component moved outside to prevent recreation
+const LoginForm = ({ 
+  password, 
+  setPassword, 
+  loginError, 
+  handleLogin 
+}: {
+  password: string;
+  setPassword: (value: string) => void;
+  loginError: string;
+  handleLogin: (e: React.FormEvent) => void;
+}) => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="max-w-md w-full mx-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="h-8 w-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-black mb-2">Admin Access</h1>
+          <p className="text-gray-600">Enter password to access the dashboard</p>
+        </div>
+
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black transition-colors"
+              placeholder="Enter admin password"
+              required
+              autoComplete="current-password"
+            />
+          </div>
+
+          {loginError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-red-600 text-sm">{loginError}</p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+          >
+            Access Dashboard
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500">
+            AA Designer Studio - Secure Admin Panel
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
   
   // Admin password - you can change this to your preferred password
@@ -56,92 +118,6 @@ const Admin = () => {
       setIsAuthenticated(true);
     }
   }, []);
-
-  // Handle login
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('adminAuthenticated', 'true');
-      setLoginError('');
-    } else {
-      setLoginError('Incorrect password. Please try again.');
-      setPassword('');
-    }
-  };
-
-  // Handle logout
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('adminAuthenticated');
-    setPassword('');
-  };
-
-  // Login form component
-  const LoginForm = () => (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="max-w-md w-full mx-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-black mb-2">Admin Access</h1>
-            <p className="text-gray-600">Enter password to access the dashboard</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black transition-colors"
-                  placeholder="Enter admin password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-
-            {loginError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-600 text-sm">{loginError}</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
-            >
-              Access Dashboard
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              AA Designer Studio - Secure Admin Panel
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Show login form if not authenticated
-  if (!isAuthenticated) {
-    return <LoginForm />;
-  }
 
   // Load data from localStorage on component mount
   useEffect(() => {
@@ -237,6 +213,35 @@ const Admin = () => {
       localStorage.setItem('adminBlogPosts', JSON.stringify(defaultBlogPosts));
     }
   }, []);
+
+  // Handle login
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('adminAuthenticated', 'true');
+      setLoginError('');
+    } else {
+      setLoginError('Incorrect password. Please try again.');
+    }
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('adminAuthenticated');
+    setPassword('');
+  };
+
+  // Show login form if not authenticated
+  if (!isAuthenticated) {
+    return <LoginForm 
+      password={password} 
+      setPassword={setPassword} 
+      loginError={loginError} 
+      handleLogin={handleLogin} 
+    />;
+  }
 
   // Save testimonials to localStorage
   const saveTestimonials = (newTestimonials: Testimonial[]) => {
