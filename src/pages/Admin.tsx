@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, Upload, Star, Lock, Eye, EyeOff } from 'lucide-react';
+import { testimonialsAPI, projectsAPI, blogAPI } from '../services/api';
 
 interface Testimonial {
   id: string;
   name: string;
   role: string;
-  image: string;
+  image_path: string | null;
+  image?: File; // For form handling
   rating: number;
   text: string;
   project: string;
@@ -15,7 +17,8 @@ interface Project {
   id: string;
   title: string;
   category: string;
-  image: string;
+  image_path: string | null;
+  image?: File; // For form handling
   description: string;
   year: string;
 }
@@ -25,12 +28,13 @@ interface BlogPost {
   title: string;
   excerpt: string;
   content: string;
-  image: string;
+  image_path: string | null;
+  image?: File; // For form handling
   author: string;
   date: string;
   category: string;
-  readTime: string;
-  tags: string[];
+  read_time: string;
+  tags: string;
 }
 
 // Login form component moved outside to prevent recreation
@@ -110,6 +114,8 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState<'testimonials' | 'projects' | 'blog'>('testimonials');
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Check if user is already authenticated (session storage)
   useEffect(() => {
@@ -119,100 +125,33 @@ const Admin = () => {
     }
   }, []);
 
-  // Load data from localStorage on component mount
+  // Load data from API when authenticated
   useEffect(() => {
-    const savedTestimonials = localStorage.getItem('adminTestimonials');
-    const savedProjects = localStorage.getItem('adminProjects');
-    const savedBlogPosts = localStorage.getItem('adminBlogPosts');
+    if (!isAuthenticated) return;
 
-    if (savedTestimonials) {
-      setTestimonials(JSON.parse(savedTestimonials));
-    } else {
-      // Default testimonials
-      const defaultTestimonials: Testimonial[] = [
-        {
-          id: '1',
-          name: "Sarah Johnson",
-          role: "Homeowner",
-          image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg",
-          rating: 5,
-          text: "AA Designer Studio transformed our home into a masterpiece. Their attention to detail and understanding of our vision was exceptional.",
-          project: "Modern Family Home"
-        },
-        {
-          id: '2',
-          name: "Michael Chen",
-          role: "Business Owner",
-          image: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
-          rating: 5,
-          text: "The team's professionalism and creativity exceeded our expectations. They created a workspace that enhances productivity.",
-          project: "Corporate Office Design"
-        }
-      ];
-      setTestimonials(defaultTestimonials);
-      localStorage.setItem('adminTestimonials', JSON.stringify(defaultTestimonials));
-    }
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [testimonialsData, projectsData, blogData] = await Promise.all([
+          testimonialsAPI.getAll(),
+          projectsAPI.getAll(),
+          blogAPI.getAll()
+        ]);
+        
+        setTestimonials(testimonialsData);
+        setProjects(projectsData);
+        setBlogPosts(blogData);
+      } catch (err) {
+        setError('Failed to load data. Please check if the backend server is running.');
+        console.error('Error loading data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (savedProjects) {
-      setProjects(JSON.parse(savedProjects));
-    } else {
-      // Default projects
-      const defaultProjects: Project[] = [
-        {
-          id: '1',
-          title: "Modern Penthouse",
-          category: "residential",
-          image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg",
-          description: "Luxury penthouse with panoramic city views",
-          year: "2024"
-        },
-        {
-          id: '2',
-          title: "Corporate Headquarters",
-          category: "commercial",
-          image: "https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg",
-          description: "Contemporary office space design",
-          year: "2023"
-        }
-      ];
-      setProjects(defaultProjects);
-      localStorage.setItem('adminProjects', JSON.stringify(defaultProjects));
-    }
-
-    if (savedBlogPosts) {
-      setBlogPosts(JSON.parse(savedBlogPosts));
-    } else {
-      // Default blog posts
-      const defaultBlogPosts: BlogPost[] = [
-        {
-          id: '1',
-          title: "The Future of Interior Design: Sustainable Living Spaces",
-          excerpt: "Explore how sustainable design practices are reshaping modern interiors and creating healthier living environments for the future.",
-          content: "Sustainability in interior design is no longer just a trend—it's becoming a necessity. As we face environmental challenges, designers are reimagining spaces to be both beautiful and environmentally responsible.\n\nKey sustainable practices include:\n\n• Using reclaimed and recycled materials\n• Choosing low-VOC paints and finishes\n• Incorporating energy-efficient lighting\n• Selecting furniture from sustainable sources\n• Designing for longevity rather than trends\n\nAt AA Designer Studio, we believe that sustainable design doesn't mean compromising on style. Our approach integrates eco-friendly materials with cutting-edge design principles to create spaces that are both stunning and responsible.",
-          image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg",
-          author: "Anjan & Mona",
-          date: "2024-01-15",
-          category: "sustainability",
-          readTime: "5 min read",
-          tags: ["Sustainability", "Modern Design", "Eco-Friendly"]
-        },
-        {
-          id: '2',
-          title: "Maximizing Small Spaces: Design Tips for Urban Living",
-          excerpt: "Discover innovative strategies to make the most of compact living spaces without compromising on style or functionality.",
-          content: "Urban living often means working with smaller spaces, but that doesn't mean sacrificing style or functionality. Here are our top strategies for maximizing small spaces:\n\n**Multi-functional Furniture**\nInvest in pieces that serve multiple purposes—ottomans with storage, expandable dining tables, and murphy beds.\n\n**Vertical Storage Solutions**\nUtilize wall space with floating shelves, tall bookcases, and wall-mounted desks.\n\n**Light and Color**\nUse light colors to make spaces feel larger, and incorporate mirrors to reflect light and create depth.\n\n**Smart Layout Planning**\nCreate zones within open spaces using furniture placement and area rugs to define different functional areas.",
-          image: "https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg",
-          author: "Anjan & Mona",
-          date: "2024-01-10",
-          category: "tips",
-          readTime: "4 min read",
-          tags: ["Small Spaces", "Urban Living", "Space Planning"]
-        }
-      ];
-      setBlogPosts(defaultBlogPosts);
-      localStorage.setItem('adminBlogPosts', JSON.stringify(defaultBlogPosts));
-    }
-  }, []);
+    loadData();
+  }, [isAuthenticated]);
 
   // Handle login
   const handleLogin = (e: React.FormEvent) => {
@@ -233,6 +172,111 @@ const Admin = () => {
     setPassword('');
   };
 
+  // Handle testimonial operations
+  const handleAddTestimonial = async (testimonial: Testimonial) => {
+    try {
+      const newTestimonial = await testimonialsAPI.create(testimonial);
+      setTestimonials([...testimonials, newTestimonial]);
+      setShowAddForm(false);
+    } catch (err) {
+      setError('Failed to add testimonial');
+      console.error('Error adding testimonial:', err);
+    }
+  };
+
+  const handleEditTestimonial = async (testimonial: Testimonial) => {
+    try {
+      const updatedTestimonial = await testimonialsAPI.update(testimonial.id, testimonial);
+      setTestimonials(testimonials.map(t => t.id === testimonial.id ? updatedTestimonial : t));
+      setEditingItem(null);
+    } catch (err) {
+      setError('Failed to update testimonial');
+      console.error('Error updating testimonial:', err);
+    }
+  };
+
+  const handleDeleteTestimonial = async (id: string) => {
+    if (confirm('Are you sure you want to delete this testimonial?')) {
+      try {
+        await testimonialsAPI.delete(id);
+        setTestimonials(testimonials.filter(t => t.id !== id));
+      } catch (err) {
+        setError('Failed to delete testimonial');
+        console.error('Error deleting testimonial:', err);
+      }
+    }
+  };
+
+  // Handle project operations
+  const handleAddProject = async (project: Project) => {
+    try {
+      const newProject = await projectsAPI.create(project);
+      setProjects([...projects, newProject]);
+      setShowAddForm(false);
+    } catch (err) {
+      setError('Failed to add project');
+      console.error('Error adding project:', err);
+    }
+  };
+
+  const handleEditProject = async (project: Project) => {
+    try {
+      const updatedProject = await projectsAPI.update(project.id, project);
+      setProjects(projects.map(p => p.id === project.id ? updatedProject : p));
+      setEditingItem(null);
+    } catch (err) {
+      setError('Failed to update project');
+      console.error('Error updating project:', err);
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    if (confirm('Are you sure you want to delete this project?')) {
+      try {
+        await projectsAPI.delete(id);
+        setProjects(projects.filter(p => p.id !== id));
+      } catch (err) {
+        setError('Failed to delete project');
+        console.error('Error deleting project:', err);
+      }
+    }
+  };
+
+  // Handle blog post operations
+  const handleAddBlogPost = async (blogPost: BlogPost) => {
+    try {
+      const newBlogPost = await blogAPI.create(blogPost);
+      setBlogPosts([...blogPosts, newBlogPost]);
+      setShowAddForm(false);
+    } catch (err) {
+      setError('Failed to add blog post');
+      console.error('Error adding blog post:', err);
+    }
+  };
+
+  const handleEditBlogPost = async (blogPost: BlogPost) => {
+    try {
+      const updatedBlogPost = await blogAPI.update(blogPost.id, blogPost);
+      setBlogPosts(blogPosts.map(p => p.id === blogPost.id ? updatedBlogPost : p));
+      setEditingItem(null);
+    } catch (err) {
+      setError('Failed to update blog post');
+      console.error('Error updating blog post:', err);
+    }
+  };
+
+  const handleDeleteBlogPost = async (id: string) => {
+    if (confirm('Are you sure you want to delete this blog post?')) {
+      try {
+        await blogAPI.delete(id);
+        setBlogPosts(blogPosts.filter(p => p.id !== id));
+      } catch (err) {
+        setError('Failed to delete blog post');
+        console.error('Error deleting blog post:', err);
+      }
+    }
+  };
+
   // Show login form if not authenticated
   if (!isAuthenticated) {
     return <LoginForm 
@@ -242,24 +286,6 @@ const Admin = () => {
       handleLogin={handleLogin} 
     />;
   }
-
-  // Save testimonials to localStorage
-  const saveTestimonials = (newTestimonials: Testimonial[]) => {
-    setTestimonials(newTestimonials);
-    localStorage.setItem('adminTestimonials', JSON.stringify(newTestimonials));
-  };
-
-  // Save projects to localStorage
-  const saveProjects = (newProjects: Project[]) => {
-    setProjects(newProjects);
-    localStorage.setItem('adminProjects', JSON.stringify(newProjects));
-  };
-
-  // Save blog posts to localStorage
-  const saveBlogPosts = (newBlogPosts: BlogPost[]) => {
-    setBlogPosts(newBlogPosts);
-    localStorage.setItem('adminBlogPosts', JSON.stringify(newBlogPosts));
-  };
 
   // Handle image upload (convert to base64 for demo)
   const handleImageUpload = (file: File): Promise<string> => {
@@ -283,7 +309,7 @@ const Admin = () => {
         id: Date.now().toString(),
         name: '',
         role: '',
-        image: '',
+        image_path: null,
         rating: 5,
         text: '',
         project: ''
@@ -298,8 +324,7 @@ const Admin = () => {
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-        const imageUrl = await handleImageUpload(file);
-        setFormData({ ...formData, image: imageUrl });
+        setFormData({ ...formData, image: file });
       }
     };
 
@@ -380,9 +405,9 @@ const Admin = () => {
             <div>
               <label className="block text-sm font-medium mb-2">Profile Image</label>
               <div className="flex items-center space-x-4">
-                {formData.image && (
+                {(formData.image_path || formData.image) && (
                   <img
-                    src={formData.image}
+                    src={formData.image_path || (formData.image instanceof File ? URL.createObjectURL(formData.image) : '')}
                     alt="Preview"
                     className="w-16 h-16 rounded-full object-cover"
                   />
@@ -428,7 +453,7 @@ const Admin = () => {
         id: Date.now().toString(),
         title: '',
         category: 'residential',
-        image: '',
+        image_path: null,
         description: '',
         year: new Date().getFullYear().toString()
       }
@@ -442,8 +467,7 @@ const Admin = () => {
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-        const imageUrl = await handleImageUpload(file);
-        setFormData({ ...formData, image: imageUrl });
+        setFormData({ ...formData, image: file });
       }
     };
 
@@ -510,9 +534,9 @@ const Admin = () => {
             <div>
               <label className="block text-sm font-medium mb-2">Project Image</label>
               <div className="space-y-4">
-                {formData.image && (
+                {(formData.image_path || formData.image) && (
                   <img
-                    src={formData.image}
+                    src={formData.image_path || (formData.image instanceof File ? URL.createObjectURL(formData.image) : '')}
                     alt="Preview"
                     className="w-full h-48 rounded-lg object-cover"
                   />
@@ -559,12 +583,12 @@ const Admin = () => {
         title: '',
         excerpt: '',
         content: '',
-        image: '',
+        image_path: null,
         author: 'Anjan & Mona',
         date: new Date().toISOString().split('T')[0],
         category: 'design',
-        readTime: '5 min read',
-        tags: []
+        read_time: '5 min read',
+        tags: '[]'
       }
     );
 
@@ -578,21 +602,28 @@ const Admin = () => {
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-        const imageUrl = await handleImageUpload(file);
-        setFormData({ ...formData, image: imageUrl });
+        setFormData({ ...formData, image: file });
       }
     };
 
     const addTag = () => {
-      if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-        setFormData({ ...formData, tags: [...formData.tags, tagInput.trim()] });
-        setTagInput('');
+      if (tagInput.trim()) {
+        const currentTags = JSON.parse(formData.tags || '[]');
+        if (!currentTags.includes(tagInput.trim())) {
+          const newTags = [...currentTags, tagInput.trim()];
+          setFormData({ ...formData, tags: JSON.stringify(newTags) });
+          setTagInput('');
+        }
       }
     };
 
     const removeTag = (tagToRemove: string) => {
-      setFormData({ ...formData, tags: formData.tags.filter(tag => tag !== tagToRemove) });
+      const currentTags = JSON.parse(formData.tags || '[]');
+      const newTags = currentTags.filter((tag: string) => tag !== tagToRemove);
+      setFormData({ ...formData, tags: JSON.stringify(newTags) });
     };
+
+    const currentTags = JSON.parse(formData.tags || '[]');
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -640,30 +671,21 @@ const Admin = () => {
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Category</label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
-                >
-                  <option value="design">Design</option>
-                  <option value="tips">Tips & Tricks</option>
-                  <option value="trends">Trends</option>
-                  <option value="sustainability">Sustainability</option>
-                  <option value="commercial">Commercial</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Read Time</label>
+            <div>
+              <label className="block text-sm font-medium mb-2">Blog Image</label>
+              <div className="space-y-4">
+                {(formData.image_path || formData.image) && (
+                  <img
+                    src={formData.image_path || (formData.image instanceof File ? URL.createObjectURL(formData.image) : '')}
+                    alt="Preview"
+                    className="w-full h-48 rounded-lg object-cover"
+                  />
+                )}
                 <input
-                  type="text"
-                  value={formData.readTime}
-                  onChange={(e) => setFormData({ ...formData, readTime: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
-                  placeholder="5 min read"
-                  required
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full"
                 />
               </div>
             </div>
@@ -691,13 +713,39 @@ const Admin = () => {
               </div>
             </div>
 
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Category</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
+                >
+                  <option value="design">Design</option>
+                  <option value="sustainability">Sustainability</option>
+                  <option value="tips">Tips</option>
+                  <option value="trends">Trends</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Read Time</label>
+                <input
+                  type="text"
+                  value={formData.read_time}
+                  onChange={(e) => setFormData({ ...formData, read_time: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
+                  required
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">Tags</label>
               <div className="flex flex-wrap gap-2 mb-2">
-                {formData.tags.map((tag, index) => (
-                  <span 
+                {currentTags.map((tag: string, index: number) => (
+                  <span
                     key={index}
-                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm flex items-center space-x-2"
+                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm flex items-center space-x-1"
                   >
                     <span>{tag}</span>
                     <button
@@ -705,7 +753,7 @@ const Admin = () => {
                       onClick={() => removeTag(tag)}
                       className="text-gray-500 hover:text-red-500"
                     >
-                      <X className="h-3 w-3" />
+                      ×
                     </button>
                   </span>
                 ))}
@@ -716,35 +764,16 @@ const Admin = () => {
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
                   placeholder="Add a tag"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
                 />
                 <button
                   type="button"
                   onClick={addTag}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
                 >
                   Add
                 </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Featured Image</label>
-              <div className="space-y-4">
-                {formData.image && (
-                  <img
-                    src={formData.image}
-                    alt="Preview"
-                    className="w-full h-48 rounded-lg object-cover"
-                  />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full"
-                />
               </div>
             </div>
 
@@ -769,65 +798,16 @@ const Admin = () => {
     );
   };
 
-  // Handle testimonial operations
-  const handleAddTestimonial = (testimonial: Testimonial) => {
-    const newTestimonials = [...testimonials, testimonial];
-    saveTestimonials(newTestimonials);
-    setShowAddForm(false);
-  };
-
-  const handleEditTestimonial = (testimonial: Testimonial) => {
-    const newTestimonials = testimonials.map(t => t.id === testimonial.id ? testimonial : t);
-    saveTestimonials(newTestimonials);
-    setEditingItem(null);
-  };
-
-  const handleDeleteTestimonial = (id: string) => {
-    if (confirm('Are you sure you want to delete this testimonial?')) {
-      const newTestimonials = testimonials.filter(t => t.id !== id);
-      saveTestimonials(newTestimonials);
-    }
-  };
-
-  // Handle project operations
-  const handleAddProject = (project: Project) => {
-    const newProjects = [...projects, project];
-    saveProjects(newProjects);
-    setShowAddForm(false);
-  };
-
-  const handleEditProject = (project: Project) => {
-    const newProjects = projects.map(p => p.id === project.id ? project : p);
-    saveProjects(newProjects);
-    setEditingItem(null);
-  };
-
-  const handleDeleteProject = (id: string) => {
-    if (confirm('Are you sure you want to delete this project?')) {
-      const newProjects = projects.filter(p => p.id !== id);
-      saveProjects(newProjects);
-    }
-  };
-
-  // Handle blog post operations
-  const handleAddBlogPost = (blogPost: BlogPost) => {
-    const newBlogPosts = [...blogPosts, blogPost];
-    saveBlogPosts(newBlogPosts);
-    setShowAddForm(false);
-  };
-
-  const handleEditBlogPost = (blogPost: BlogPost) => {
-    const newBlogPosts = blogPosts.map(p => p.id === blogPost.id ? blogPost : p);
-    saveBlogPosts(newBlogPosts);
-    setEditingItem(null);
-  };
-
-  const handleDeleteBlogPost = (id: string) => {
-    if (confirm('Are you sure you want to delete this blog post?')) {
-      const newBlogPosts = blogPosts.filter(p => p.id !== id);
-      saveBlogPosts(newBlogPosts);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
@@ -848,6 +828,19 @@ const Admin = () => {
             </button>
           </div>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-600">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="text-red-500 hover:text-red-700 text-sm mt-2"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex space-x-1 mb-8 bg-gray-200 rounded-lg p-1">
@@ -901,7 +894,7 @@ const Admin = () => {
               <div key={testimonial.id} className="bg-white rounded-2xl p-6 shadow-sm border">
                 <div className="flex items-start space-x-4 mb-4">
                   <img
-                    src={testimonial.image}
+                    src={testimonial.image_path ? `http://localhost:3001${testimonial.image_path}` : "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg"}
                     alt={testimonial.name}
                     className="w-12 h-12 rounded-full object-cover"
                   />
@@ -939,7 +932,7 @@ const Admin = () => {
             {projects.map((project) => (
               <div key={project.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border">
                 <img
-                  src={project.image}
+                  src={project.image_path ? `http://localhost:3001${project.image_path}` : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"}
                   alt={project.title}
                   className="w-full h-48 object-cover"
                 />
@@ -973,7 +966,7 @@ const Admin = () => {
             {blogPosts.map((post) => (
               <div key={post.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border">
                 <img
-                  src={post.image}
+                  src={post.image_path ? `http://localhost:3001${post.image_path}` : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"}
                   alt={post.title}
                   className="w-full h-48 object-cover"
                 />
@@ -988,10 +981,10 @@ const Admin = () => {
                   <p className="text-gray-700 text-sm mb-3 line-clamp-3">{post.excerpt}</p>
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
                     <span>{post.author}</span>
-                    <span>{post.readTime}</span>
+                    <span>{post.read_time}</span>
                   </div>
                   <div className="flex flex-wrap gap-1 mb-4">
-                    {post.tags.slice(0, 3).map((tag, index) => (
+                    {JSON.parse(post.tags || '[]').slice(0, 3).map((tag: string, index: number) => (
                       <span key={index} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
                         {tag}
                       </span>

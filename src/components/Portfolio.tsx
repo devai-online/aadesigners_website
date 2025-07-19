@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ExternalLink, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { projectsAPI } from '../services/api';
 
 interface Project {
   id: string;
   title: string;
   category: string;
-  image: string;
+  image_path: string | null;
   description: string;
   year: string;
 }
@@ -15,70 +16,81 @@ interface Project {
 const Portfolio = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { ref, inView } = useInView({
     threshold: 0.1,
     triggerOnce: true
   });
 
-  // Load projects from localStorage or use defaults
-  React.useEffect(() => {
-    const savedProjects = localStorage.getItem('adminProjects');
-    if (savedProjects) {
-      setProjects(JSON.parse(savedProjects));
-    } else {
-      // Default projects
-      const defaultProjects: Project[] = [
-        {
-          id: '1',
-          title: "Modern Penthouse",
-          category: "residential",
-          image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg",
-          description: "Luxury penthouse with panoramic city views",
-          year: "2024"
-        },
-        {
-          id: '2',
-          title: "Corporate Headquarters",
-          category: "commercial",
-          image: "https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg",
-          description: "Contemporary office space design",
-          year: "2023"
-        },
-        {
-          id: '3',
-          title: "Boutique Hotel",
-          category: "hospitality",
-          image: "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg",
-          description: "Elegant hotel interior with local influences",
-          year: "2024"
-        },
-        {
-          id: '4',
-          title: "Family Villa",
-          category: "residential",
-          image: "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg",
-          description: "Spacious family home with garden views",
-          year: "2023"
-        },
-        {
-          id: '5',
-          title: "Restaurant Design",
-          category: "hospitality",
-          image: "https://images.pexels.com/photos/1579253/pexels-photo-1579253.jpeg",
-          description: "Fine dining restaurant with intimate atmosphere",
-          year: "2024"
-        },
-        {
-          id: '6',
-          title: "Tech Startup Office",
-          category: "commercial",
-          image: "https://images.pexels.com/photos/1170412/pexels-photo-1170412.jpeg",
-          description: "Creative workspace for innovation",
-          year: "2023"
-        }
-      ];
-      setProjects(defaultProjects);
-    }
+  // Load projects from API
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        setLoading(true);
+        const data = await projectsAPI.getAll();
+        setProjects(data);
+      } catch (err) {
+        console.error('Error loading projects:', err);
+        setError('Failed to load projects');
+        // Fallback to default projects
+        const defaultProjects: Project[] = [
+          {
+            id: '1',
+            title: "Modern Penthouse",
+            category: "residential",
+            image_path: null,
+            description: "Luxury penthouse with panoramic city views",
+            year: "2024"
+          },
+          {
+            id: '2',
+            title: "Corporate Headquarters",
+            category: "commercial",
+            image_path: null,
+            description: "Contemporary office space design",
+            year: "2023"
+          },
+          {
+            id: '3',
+            title: "Boutique Hotel",
+            category: "hospitality",
+            image_path: null,
+            description: "Elegant hotel interior with local influences",
+            year: "2024"
+          },
+          {
+            id: '4',
+            title: "Family Villa",
+            category: "residential",
+            image_path: null,
+            description: "Spacious family home with garden views",
+            year: "2023"
+          },
+          {
+            id: '5',
+            title: "Restaurant Design",
+            category: "hospitality",
+            image_path: null,
+            description: "Fine dining restaurant with intimate atmosphere",
+            year: "2024"
+          },
+          {
+            id: '6',
+            title: "Tech Startup Office",
+            category: "commercial",
+            image_path: null,
+            description: "Creative workspace for innovation",
+            year: "2023"
+          }
+        ];
+        setProjects(defaultProjects);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProjects();
   }, []);
 
   const filters = [
@@ -91,6 +103,19 @@ const Portfolio = () => {
   const filteredProjects = activeFilter === 'all' 
     ? projects 
     : projects.filter(project => project.category === activeFilter);
+
+  if (loading) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading projects...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 bg-white">
@@ -171,7 +196,10 @@ const Portfolio = () => {
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img 
-                    src={project.image}
+                    src={project.image_path 
+                      ? `http://localhost:3001${project.image_path}`
+                      : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"
+                    }
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
@@ -199,19 +227,28 @@ const Portfolio = () => {
                       {project.year}
                     </span>
                   </div>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
+                  
+                  <p className="text-gray-600 mb-4 line-clamp-2">
                     {project.description}
                   </p>
-                  <div className="flex items-center text-black group-hover:text-gray-700 transition-colors duration-300">
-                    <span className="text-sm font-medium">Learn More</span>
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-900 capitalize bg-gray-100 px-3 py-1 rounded-full">
+                      {project.category}
+                    </span>
+                    <motion.button
+                      className="text-black hover:text-gray-700 transition-colors duration-300"
+                      whileHover={{ x: 5 }}
+                    >
+                      <ArrowRight className="h-5 w-5" />
+                    </motion.button>
                   </div>
                 </div>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* View All Button */}
+          {/* View All Projects Button */}
           <motion.div 
             className="text-center mt-12"
             initial={{ opacity: 0, y: 20 }}
@@ -219,7 +256,7 @@ const Portfolio = () => {
             transition={{ duration: 0.8, delay: 1.2 }}
           >
             <motion.button
-              className="bg-black text-white px-8 py-4 rounded-full font-medium tracking-wide hover:bg-gray-800 transition-colors duration-300 inline-flex items-center space-x-2"
+              className="bg-black text-white px-8 py-4 rounded-full font-medium hover:bg-gray-800 transition-colors duration-300 flex items-center space-x-2 mx-auto"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >

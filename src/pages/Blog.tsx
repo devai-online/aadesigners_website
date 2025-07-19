@@ -3,111 +3,123 @@ import { Calendar, User, ArrowRight, Clock, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Link } from 'react-router-dom';
+import { blogAPI } from '../services/api';
 
 interface BlogPost {
   id: string;
   title: string;
   excerpt: string;
   content: string;
-  image: string;
+  image_path: string | null;
   author: string;
   date: string;
   category: string;
-  readTime: string;
-  tags: string[];
+  read_time: string;
+  tags: string;
 }
 
 const Blog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { ref, inView } = useInView({
     threshold: 0.1,
     triggerOnce: true
   });
 
-  // Load blog posts from localStorage or use defaults
+  // Load blog posts from API
   useEffect(() => {
-    const savedPosts = localStorage.getItem('adminBlogPosts');
-    if (savedPosts) {
-      setPosts(JSON.parse(savedPosts));
-    } else {
-      // Default blog posts
-      const defaultPosts: BlogPost[] = [
-        {
-          id: '1',
-          title: "The Future of Interior Design: Sustainable Living Spaces",
-          excerpt: "Explore how sustainable design practices are reshaping modern interiors and creating healthier living environments for the future.",
-          content: "Full blog content here...",
-          image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg",
-          author: "Anjan & Mona",
-          date: "2024-01-15",
-          category: "sustainability",
-          readTime: "5 min read",
-          tags: ["Sustainability", "Modern Design", "Eco-Friendly"]
-        },
-        {
-          id: '2',
-          title: "Maximizing Small Spaces: Design Tips for Urban Living",
-          excerpt: "Discover innovative strategies to make the most of compact living spaces without compromising on style or functionality.",
-          content: "Full blog content here...",
-          image: "https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg",
-          author: "Anjan & Mona",
-          date: "2024-01-10",
-          category: "tips",
-          readTime: "4 min read",
-          tags: ["Small Spaces", "Urban Living", "Space Planning"]
-        },
-        {
-          id: '3',
-          title: "Color Psychology in Interior Design: Creating Mood Through Palette",
-          excerpt: "Learn how different colors affect emotions and how to use color psychology to create the perfect atmosphere in your space.",
-          content: "Full blog content here...",
-          image: "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg",
-          author: "Anjan & Mona",
-          date: "2024-01-05",
-          category: "design",
-          readTime: "6 min read",
-          tags: ["Color Theory", "Psychology", "Interior Design"]
-        },
-        {
-          id: '4',
-          title: "2024 Interior Design Trends: What's Hot This Year",
-          excerpt: "Stay ahead of the curve with the latest interior design trends that are defining spaces in 2024.",
-          content: "Full blog content here...",
-          image: "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg",
-          author: "Anjan & Mona",
-          date: "2024-01-01",
-          category: "trends",
-          readTime: "7 min read",
-          tags: ["Trends", "2024", "Modern Design"]
-        },
-        {
-          id: '5',
-          title: "Lighting Design: The Art of Illuminating Your Space",
-          excerpt: "Master the fundamentals of lighting design to create ambiance, highlight features, and enhance functionality.",
-          content: "Full blog content here...",
-          image: "https://images.pexels.com/photos/1579253/pexels-photo-1579253.jpeg",
-          author: "Anjan & Mona",
-          date: "2023-12-28",
-          category: "design",
-          readTime: "5 min read",
-          tags: ["Lighting", "Ambiance", "Design Fundamentals"]
-        },
-        {
-          id: '6',
-          title: "Commercial Space Design: Creating Productive Work Environments",
-          excerpt: "Explore how thoughtful commercial design can boost productivity, employee satisfaction, and business success.",
-          content: "Full blog content here...",
-          image: "https://images.pexels.com/photos/1170412/pexels-photo-1170412.jpeg",
-          author: "Anjan & Mona",
-          date: "2023-12-25",
-          category: "commercial",
-          readTime: "8 min read",
-          tags: ["Commercial Design", "Productivity", "Workplace"]
-        }
-      ];
-      setPosts(defaultPosts);
-    }
+    const loadPosts = async () => {
+      try {
+        setLoading(true);
+        const data = await blogAPI.getAll();
+        setPosts(data);
+      } catch (err) {
+        console.error('Error loading blog posts:', err);
+        setError('Failed to load blog posts');
+        // Fallback to default blog posts
+        const defaultPosts: BlogPost[] = [
+          {
+            id: '1',
+            title: "The Future of Interior Design: Sustainable Living Spaces",
+            excerpt: "Explore how sustainable design practices are reshaping modern interiors and creating healthier living environments for the future.",
+            content: "Full blog content here...",
+            image_path: null,
+            author: "Anjan & Mona",
+            date: "2024-01-15",
+            category: "sustainability",
+            read_time: "5 min read",
+            tags: JSON.stringify(["Sustainability", "Modern Design", "Eco-Friendly"])
+          },
+          {
+            id: '2',
+            title: "Maximizing Small Spaces: Design Tips for Urban Living",
+            excerpt: "Discover innovative strategies to make the most of compact living spaces without compromising on style or functionality.",
+            content: "Full blog content here...",
+            image_path: null,
+            author: "Anjan & Mona",
+            date: "2024-01-10",
+            category: "tips",
+            read_time: "4 min read",
+            tags: JSON.stringify(["Small Spaces", "Urban Living", "Space Planning"])
+          },
+          {
+            id: '3',
+            title: "Color Psychology in Interior Design: Creating Mood Through Palette",
+            excerpt: "Learn how different colors affect emotions and how to use color psychology to create the perfect atmosphere in your space.",
+            content: "Full blog content here...",
+            image_path: null,
+            author: "Anjan & Mona",
+            date: "2024-01-05",
+            category: "design",
+            read_time: "6 min read",
+            tags: JSON.stringify(["Color Theory", "Psychology", "Interior Design"])
+          },
+          {
+            id: '4',
+            title: "2024 Interior Design Trends: What's Hot This Year",
+            excerpt: "Stay ahead of the curve with the latest interior design trends that are defining spaces in 2024.",
+            content: "Full blog content here...",
+            image_path: null,
+            author: "Anjan & Mona",
+            date: "2024-01-01",
+            category: "trends",
+            read_time: "7 min read",
+            tags: JSON.stringify(["Trends", "2024", "Modern Design"])
+          },
+          {
+            id: '5',
+            title: "Lighting Design: The Art of Illuminating Your Space",
+            excerpt: "Master the fundamentals of lighting design to create ambiance, highlight features, and enhance functionality.",
+            content: "Full blog content here...",
+            image_path: null,
+            author: "Anjan & Mona",
+            date: "2023-12-28",
+            category: "design",
+            read_time: "5 min read",
+            tags: JSON.stringify(["Lighting", "Ambiance", "Design Fundamentals"])
+          },
+          {
+            id: '6',
+            title: "Commercial Space Design: Creating Productive Work Environments",
+            excerpt: "Explore how thoughtful commercial design can boost productivity, employee satisfaction, and business success.",
+            content: "Full blog content here...",
+            image_path: null,
+            author: "Anjan & Mona",
+            date: "2023-12-25",
+            category: "commercial",
+            read_time: "8 min read",
+            tags: JSON.stringify(["Commercial Design", "Productivity", "Workplace"])
+          }
+        ];
+        setPosts(defaultPosts);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPosts();
   }, []);
 
   const categories = [
@@ -140,10 +152,23 @@ const Blog = () => {
       y: 0,
       transition: {
         duration: 0.8,
-        ease: "easeOut"
+        ease: "easeOut" as const
       }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white pt-24">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading blog posts...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white pt-24">
@@ -199,28 +224,32 @@ const Blog = () => {
               className="mb-16"
               variants={itemVariants}
             >
-              <div className="bg-gray-50 rounded-3xl overflow-hidden">
-                <div className="grid lg:grid-cols-2 gap-0">
-                  <div className="aspect-[4/3] lg:aspect-auto">
+              <div className="bg-gradient-to-br from-gray-50 to-white rounded-3xl p-8 lg:p-12 shadow-lg">
+                <div className="grid lg:grid-cols-2 gap-8 items-center">
+                  <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gray-200">
                     <img 
-                      src={filteredPosts[0].image}
+                      src={filteredPosts[0].image_path 
+                        ? `http://localhost:3001${filteredPosts[0].image_path}`
+                        : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"
+                      }
                       alt={filteredPosts[0].title}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="p-8 lg:p-12 flex flex-col justify-center">
-                    <div className="flex items-center space-x-4 mb-4">
-                      <span className="bg-black text-white px-3 py-1 rounded-full text-sm font-medium capitalize">
-                        Featured
-                      </span>
-                      <span className="text-gray-500 text-sm capitalize">
+                  <div className="space-y-6">
+                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <span className="bg-gray-200 px-3 py-1 rounded-full capitalize">
                         {filteredPosts[0].category}
                       </span>
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>{new Date(filteredPosts[0].date).toLocaleDateString()}</span>
+                      </div>
                     </div>
-                    <h2 className="text-3xl font-bold text-black mb-4 leading-tight">
+                    <h2 className="text-3xl lg:text-4xl font-bold text-black leading-tight">
                       {filteredPosts[0].title}
                     </h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <p className="text-lg text-gray-700 leading-relaxed">
                       {filteredPosts[0].excerpt}
                     </p>
                     <div className="flex items-center justify-between">
@@ -230,12 +259,8 @@ const Blog = () => {
                           <span>{filteredPosts[0].author}</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{new Date(filteredPosts[0].date).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
                           <Clock className="h-4 w-4" />
-                          <span>{filteredPosts[0].readTime}</span>
+                          <span>{filteredPosts[0].read_time}</span>
                         </div>
                       </div>
                       <motion.button
@@ -256,62 +281,53 @@ const Blog = () => {
           {/* Blog Posts Grid */}
           <motion.div 
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={containerVariants}
+            variants={itemVariants}
           >
             {filteredPosts.slice(1).map((post, index) => (
               <motion.article
                 key={post.id}
-                variants={itemVariants}
-                className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100"
+                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 group"
                 whileHover={{ y: -10 }}
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="aspect-[4/3] overflow-hidden">
                   <img 
-                    src={post.image}
+                    src={post.image_path 
+                      ? `http://localhost:3001${post.image_path}`
+                      : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"
+                    }
                     alt={post.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
-                  <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1 rounded-full text-sm font-medium capitalize">
-                    {post.category}
-                  </div>
                 </div>
-
                 <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm capitalize">
+                      {post.category}
+                    </span>
+                    <div className="flex items-center space-x-1 text-sm text-gray-600">
+                      <Clock className="h-4 w-4" />
+                      <span>{post.read_time}</span>
+                    </div>
+                  </div>
+                  
                   <h3 className="text-xl font-bold text-black mb-3 group-hover:text-gray-700 transition-colors duration-300 line-clamp-2">
                     {post.title}
                   </h3>
-                  <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">
+                  
+                  <p className="text-gray-600 mb-4 line-clamp-3">
                     {post.excerpt}
                   </p>
                   
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>{new Date(post.date).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Clock className="h-4 w-4" />
-                      <span>{post.readTime}</span>
-                    </div>
-                  </div>
-
                   <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1">
-                      {post.tags.slice(0, 2).map((tag, tagIndex) => (
-                        <span 
-                          key={tagIndex}
-                          className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <User className="h-4 w-4" />
+                      <span>{post.author}</span>
                     </div>
                     <motion.button
-                      className="text-black font-medium hover:text-gray-700 transition-colors duration-300 flex items-center space-x-1"
+                      className="text-black hover:text-gray-700 transition-colors duration-300"
                       whileHover={{ x: 5 }}
                     >
-                      <span>Read More</span>
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-5 w-5" />
                     </motion.button>
                   </div>
                 </div>
@@ -319,53 +335,22 @@ const Blog = () => {
             ))}
           </motion.div>
 
-          {/* Empty State */}
-          {filteredPosts.length === 0 && (
+          {/* Load More Button */}
+          {filteredPosts.length > 6 && (
             <motion.div 
-              className="text-center py-20"
+              className="text-center mt-12"
               variants={itemVariants}
             >
-              <div className="text-6xl mb-4">📝</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">No Posts Found</h3>
-              <p className="text-gray-600 mb-8">
-                No blog posts match the selected category. Try selecting a different category.
-              </p>
-              <button
-                onClick={() => setActiveCategory('all')}
-                className="bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors duration-300"
-              >
-                View All Posts
-              </button>
-            </motion.div>
-          )}
-
-          {/* Newsletter Signup */}
-          <motion.div 
-            className="mt-20 bg-black rounded-3xl p-12 text-white text-center"
-            variants={itemVariants}
-          >
-            <h3 className="text-3xl font-bold mb-6">
-              Stay Updated with Design Insights
-            </h3>
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Subscribe to our newsletter and never miss the latest design trends, 
-              tips, and project showcases.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-6 py-3 rounded-full text-black focus:outline-none"
-              />
               <motion.button
-                className="bg-white text-black px-8 py-3 rounded-full font-medium hover:bg-gray-100 transition-colors duration-300"
+                className="bg-black text-white px-8 py-4 rounded-full font-medium hover:bg-gray-800 transition-colors duration-300 flex items-center space-x-2 mx-auto"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Subscribe
+                <span>Load More Posts</span>
+                <ArrowRight className="h-5 w-5" />
               </motion.button>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </div>

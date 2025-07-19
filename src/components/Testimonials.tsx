@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { testimonialsAPI } from '../services/api';
 
 interface Testimonial {
   id: string;
   name: string;
   role: string;
-  image: string;
+  image_path: string | null;
   rating: number;
   text: string;
   project: string;
@@ -16,58 +17,69 @@ interface Testimonial {
 const Testimonials = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { ref, inView } = useInView({
     threshold: 0.1,
     triggerOnce: true
   });
 
-  // Load testimonials from localStorage or use defaults
-  React.useEffect(() => {
-    const savedTestimonials = localStorage.getItem('adminTestimonials');
-    if (savedTestimonials) {
-      setTestimonials(JSON.parse(savedTestimonials));
-    } else {
-      // Default testimonials
-      const defaultTestimonials: Testimonial[] = [
-        {
-          id: '1',
-          name: "Sarah Johnson",
-          role: "Homeowner",
-          image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg",
-          rating: 5,
-          text: "AA Designer Studio transformed our home into a masterpiece. Their attention to detail and understanding of our vision was exceptional. Every room now tells a story of elegance and functionality.",
-          project: "Modern Family Home"
-        },
-        {
-          id: '2',
-          name: "Michael Chen",
-          role: "Business Owner",
-          image: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
-          rating: 5,
-          text: "The team's professionalism and creativity exceeded our expectations. They created a workspace that not only looks stunning but also enhances productivity and employee satisfaction.",
-          project: "Corporate Office Design"
-        },
-        {
-          id: '3',
-          name: "Emma Rodriguez",
-          role: "Restaurant Owner",
-          image: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg",
-          rating: 5,
-          text: "From concept to completion, AA Designer Studio delivered beyond our dreams. The ambiance they created has significantly improved our customer experience and business success.",
-          project: "Restaurant Interior"
-        },
-        {
-          id: '4',
-          name: "David Thompson",
-          role: "Property Developer",
-          image: "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg",
-          rating: 5,
-          text: "Working with Anjan and Mona was a game-changer for our luxury development. Their innovative designs and sustainable approach set our properties apart in the market.",
-          project: "Luxury Apartments"
-        }
-      ];
-      setTestimonials(defaultTestimonials);
-    }
+  // Load testimonials from API
+  useEffect(() => {
+    const loadTestimonials = async () => {
+      try {
+        setLoading(true);
+        const data = await testimonialsAPI.getAll();
+        setTestimonials(data);
+      } catch (err) {
+        console.error('Error loading testimonials:', err);
+        setError('Failed to load testimonials');
+        // Fallback to default testimonials
+        const defaultTestimonials: Testimonial[] = [
+          {
+            id: '1',
+            name: "Sarah Johnson",
+            role: "Homeowner",
+            image_path: null,
+            rating: 5,
+            text: "AA Designer Studio transformed our home into a masterpiece. Their attention to detail and understanding of our vision was exceptional. Every room now tells a story of elegance and functionality.",
+            project: "Modern Family Home"
+          },
+          {
+            id: '2',
+            name: "Michael Chen",
+            role: "Business Owner",
+            image_path: null,
+            rating: 5,
+            text: "The team's professionalism and creativity exceeded our expectations. They created a workspace that not only looks stunning but also enhances productivity and employee satisfaction.",
+            project: "Corporate Office Design"
+          },
+          {
+            id: '3',
+            name: "Emma Rodriguez",
+            role: "Restaurant Owner",
+            image_path: null,
+            rating: 5,
+            text: "From concept to completion, AA Designer Studio delivered beyond our dreams. The ambiance they created has significantly improved our customer experience and business success.",
+            project: "Restaurant Interior"
+          },
+          {
+            id: '4',
+            name: "David Thompson",
+            role: "Property Developer",
+            image_path: null,
+            rating: 5,
+            text: "Working with Anjan and Mona was a game-changer for our luxury development. Their innovative designs and sustainable approach set our properties apart in the market.",
+            project: "Luxury Apartments"
+          }
+        ];
+        setTestimonials(defaultTestimonials);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTestimonials();
   }, []);
 
   const nextTestimonial = () => {
@@ -77,6 +89,19 @@ const Testimonials = () => {
   const prevTestimonial = () => {
     setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
+
+  if (loading) {
+    return (
+      <section id="testimonials" className="py-20 bg-gradient-to-br from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading testimonials...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (testimonials.length === 0) {
     return null;
@@ -152,7 +177,10 @@ const Testimonials = () => {
                     <div className="relative">
                       <div className="aspect-square rounded-2xl overflow-hidden bg-gray-200">
                         <img 
-                          src={testimonials[currentTestimonial].image}
+                          src={testimonials[currentTestimonial].image_path 
+                            ? `http://localhost:3001${testimonials[currentTestimonial].image_path}`
+                            : "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg"
+                          }
                           alt={testimonials[currentTestimonial].name}
                           className="w-full h-full object-cover"
                         />
@@ -201,42 +229,41 @@ const Testimonials = () => {
               </motion.div>
             </AnimatePresence>
 
-            {/* Navigation */}
-            <div className="flex justify-center items-center mt-8 space-x-4">
-              <motion.button
-                onClick={prevTestimonial}
-                className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors duration-300"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </motion.button>
-
-              {/* Dots */}
-              <div className="flex space-x-2">
-                {testimonials.map((_, index) => (
-                  <motion.button
-                    key={index}
-                    onClick={() => setCurrentTestimonial(index)}
-                    className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                      index === currentTestimonial ? 'bg-black' : 'bg-gray-300'
-                    }`}
-                    whileHover={{ scale: 1.2 }}
-                    whileTap={{ scale: 0.8 }}
-                  />
-                ))}
-              </div>
-
-              <motion.button
-                onClick={nextTestimonial}
-                className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors duration-300"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <ChevronRight className="h-6 w-6" />
-              </motion.button>
-            </div>
+            {/* Navigation Buttons */}
+            {testimonials.length > 1 && (
+              <>
+                <button
+                  onClick={prevTestimonial}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                >
+                  <ChevronLeft className="h-6 w-6 text-black" />
+                </button>
+                <button
+                  onClick={nextTestimonial}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                >
+                  <ChevronRight className="h-6 w-6 text-black" />
+                </button>
+              </>
+            )}
           </div>
+
+          {/* Dots Indicator */}
+          {testimonials.length > 1 && (
+            <div className="flex justify-center mt-8 space-x-2">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentTestimonial(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === currentTestimonial
+                      ? 'bg-black scale-125'
+                      : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </motion.div>
       </div>
     </section>
