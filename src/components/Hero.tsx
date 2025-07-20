@@ -7,24 +7,44 @@ const Hero = () => {
 
   const slides = [
     {
-      image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg",
+      image: "/1.png",
       title: "Modern Living Spaces",
       description: "Contemporary design meets functionality"
     },
     {
-      image: "https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg",
+      image: "/2.png",
       title: "Elegant Interiors",
       description: "Sophisticated spaces with personal touch"
     },
     {
-      image: "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg",
+      image: "/3.png",
       title: "Luxury Design",
       description: "Premium materials and craftsmanship"
     },
     {
-      image: "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg",
+      image: "/4.jpg",
       title: "Functional Beauty",
       description: "Where form meets function perfectly"
+    },
+    {
+      image: "/5.png",
+      title: "Design Excellence",
+      description: "Where creativity meets precision"
+    },
+    {
+      image: "/6.png",
+      title: "Timeless Elegance",
+      description: "Classic designs for modern living"
+    },
+    {
+      image: "/7.png",
+      title: "Innovative Spaces",
+      description: "Pushing boundaries in interior design"
+    },
+    {
+      image: "/8.png",
+      title: "Artistic Vision",
+      description: "Transforming spaces into masterpieces"
     }
   ];
 
@@ -212,7 +232,7 @@ const Hero = () => {
               transition={{ duration: 0.3 }}
             >
               <img 
-                src="https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg" 
+                src="/1.png" 
                 alt="Modern Interior Design" 
                 className="w-full h-full object-cover"
               />

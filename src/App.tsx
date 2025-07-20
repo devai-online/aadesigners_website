@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoadingScreen from './components/LoadingScreen';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import WhoWeAre from './pages/WhoWeAre';
 import WhatWeDo from './pages/WhatWeDo';
@@ -24,6 +25,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen">
+        <ScrollToTop />
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />

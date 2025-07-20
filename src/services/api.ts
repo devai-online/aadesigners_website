@@ -18,7 +18,12 @@ const createFormData = (data) => {
         formData.append(key, JSON.stringify(data[key]));
       } else if (key === 'image' && data[key] instanceof File) {
         formData.append(key, data[key]);
-      } else if (key !== 'image') {
+      } else if (key === 'images' && Array.isArray(data[key])) {
+        // Handle multiple images for projects
+        data[key].forEach((file, index) => {
+          formData.append('images', file);
+        });
+      } else if (key !== 'image' && key !== 'images') {
         formData.append(key, data[key]);
       }
     }

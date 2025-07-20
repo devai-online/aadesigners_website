@@ -27,7 +27,7 @@ const Footer = () => {
           
           {/* Our Studio */}
           <div>
-            <h3 className="text-xl font-bold text-orange-500 mb-6">Our Studio</h3>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent mb-6">Our Studio</h3>
             <div className="space-y-4">
               <div>
                 <h4 className="text-lg font-semibold text-white mb-2">AA Designer Studio</h4>
@@ -44,7 +44,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-bold text-amber-400 mb-6">Quick Links</h3>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent mb-6">Quick Links</h3>
             <div className="space-y-3">
               <Link 
                 to="/who-we-are" 
@@ -75,7 +75,7 @@ const Footer = () => {
 
           {/* Services */}
           <div>
-            <h3 className="text-xl font-bold text-amber-400 mb-6">Services</h3>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent mb-6">Services</h3>
             <div className="space-y-3 text-gray-300">
               <p>Residential Design</p>
               <p>Commercial Spaces</p>
@@ -88,22 +88,22 @@ const Footer = () => {
 
           {/* Contact Us */}
           <div>
-            <h3 className="text-xl font-bold text-orange-500 mb-6">Contact Us</h3>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent mb-6">Contact Us</h3>
             <div className="space-y-4">
               <div className="flex items-center space-x-3 text-gray-300">
                 <Phone className="h-5 w-5 flex-shrink-0" />
                 <div>
                   <a 
-                    href="tel:+917842139777" 
-                    className="hover:text-amber-400 transition-colors duration-300 block"
-                  >
-                    (+91) 78421 39777
-                  </a>
-                  <a 
                     href="tel:+917993547958" 
                     className="hover:text-amber-400 transition-colors duration-300 block"
                   >
                     (+91) 79935 47958
+                  </a>
+                  <a 
+                    href="tel:+918099754478" 
+                    className="hover:text-amber-400 transition-colors duration-300 block"
+                  >
+                    (+91) 80997 54478
                   </a>
                 </div>
               </div>
@@ -120,7 +120,14 @@ const Footer = () => {
               
               <div className="flex items-center space-x-3 text-gray-300">
                 <Instagram className="h-5 w-5 flex-shrink-0" />
-                <span>AADesignerStudio</span>
+                <a 
+                  href="https://www.instagram.com/aa_designer_studio" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-amber-400 transition-colors duration-300"
+                >
+                  aa_designer_studio
+                </a>
               </div>
             </div>
           </div>
@@ -131,7 +138,7 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-6 md:mb-0">
               <img 
-                src="/image.png" 
+                src="/FINAL LOGO PSD - R1.png" 
                 alt="AA Designer Studio" 
                 className="h-12 w-auto mr-4"
               />
@@ -146,7 +153,15 @@ const Footer = () => {
                 © 2024 AA Designer Studio. All rights reserved.
               </p>
               <p className="text-gray-500">
-                Designed with precision for exceptional spaces
+                Designed with love ♥ and maintained by{' '}
+                <a 
+                  href="https://devai.online" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-amber-400 hover:text-amber-300 transition-colors duration-300"
+                >
+                  DevAI
+                </a>
               </p>
             </div>
           </div>

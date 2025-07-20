@@ -32,6 +32,8 @@ const initDatabase = () => {
           image_path TEXT,
           description TEXT NOT NULL,
           year TEXT NOT NULL,
+          location TEXT,
+          images TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `);
@@ -128,20 +130,22 @@ const insertDefaultData = () => {
               category: "residential",
               image_path: null,
               description: "Luxury penthouse with panoramic city views",
-              year: "2024"
+              year: "2024",
+              location: "Hyderabad"
             },
             {
               title: "Corporate Headquarters",
               category: "commercial",
               image_path: null,
               description: "Contemporary office space design",
-              year: "2023"
+              year: "2023",
+              location: "Hyderabad"
             }
           ];
 
           const stmt = db.prepare(`
-            INSERT INTO projects (title, category, image_path, description, year)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO projects (title, category, image_path, description, year, location, images)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
           `);
 
           defaultProjects.forEach(project => {
@@ -150,7 +154,9 @@ const insertDefaultData = () => {
               project.category,
               project.image_path,
               project.description,
-              project.year
+              project.year,
+              project.location,
+              project.image_path ? JSON.stringify([project.image_path]) : null
             ]);
           });
 

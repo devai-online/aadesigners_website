@@ -76,14 +76,14 @@ const WhoWeAre = () => {
                 <div className="aspect-[3/4] rounded-3xl overflow-hidden bg-gray-200">
                   <img 
                     src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg" 
-                    alt="Anjan and Mona - Founders" 
+                    alt="Anjan and Nihar - Founders" 
                     className="w-full h-full object-cover"
                   />
                 </div>
                 
                 <div className="absolute -bottom-6 -right-6 bg-black text-white rounded-2xl p-6">
-                  <h3 className="text-xl font-bold">Anjan & Mona</h3>
-                  <p className="text-gray-300">Founders</p>
+                  <h3 className="text-xl font-bold">Anjan & Nihar</h3>
+                  <p className="text-gray-300">Founder | Managing Director</p>
                 </div>
               </div>
             </div>
@@ -105,7 +105,7 @@ const WhoWeAre = () => {
                 </p>
                 
                 <p className="text-xl text-gray-700 leading-relaxed">
-                  At AA Designer Studio, each of our projects are unique – we don't replicate a signature style. Anjan and Mona work closely with their clients to bring their vision to life, and they're committed to delivering exceptional design services that exceed expectations.
+                  At AA Designer Studio, each of our projects are unique – we don't replicate a signature style. Anjan and Nihar work closely with their clients to bring their vision to life, and they're committed to delivering exceptional design services that exceed expectations.
                 </p>
               </div>
 

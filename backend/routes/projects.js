@@ -55,9 +55,17 @@ router.get('/:id', (req, res) => {
 });
 
 // Create new project
-router.post('/', upload.single('image'), (req, res) => {
-  const { title, category, description, year } = req.body;
-  const image_path = req.file ? `/uploads/${req.file.filename}` : null;
+router.post('/', upload.array('images', 10), (req, res) => {
+  const { title, category, description, year, location } = req.body;
+  
+  // Handle multiple uploaded images
+  let imagesArray = [];
+  if (req.files && req.files.length > 0) {
+    imagesArray = req.files.map(file => `/uploads/${file.filename}`);
+  }
+  
+  // Use first image as main image_path
+  const image_path = imagesArray.length > 0 ? imagesArray[0] : null;
 
   if (!title || !category || !description || !year) {
     res.status(400).json({ error: 'Missing required fields' });
@@ -65,11 +73,11 @@ router.post('/', upload.single('image'), (req, res) => {
   }
 
   const sql = `
-    INSERT INTO projects (title, category, image_path, description, year)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO projects (title, category, image_path, description, year, location, images)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.run(sql, [title, category, image_path, description, year], function(err) {
+  db.run(sql, [title, category, image_path, description, year, location, JSON.stringify(imagesArray)], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -87,17 +95,25 @@ router.post('/', upload.single('image'), (req, res) => {
 });
 
 // Update project
-router.put('/:id', upload.single('image'), (req, res) => {
-  const { title, category, description, year } = req.body;
-  const image_path = req.file ? `/uploads/${req.file.filename}` : req.body.image_path;
+router.put('/:id', upload.array('images', 10), (req, res) => {
+  const { title, category, description, year, location } = req.body;
+  
+  // Handle multiple uploaded images
+  let imagesArray = [];
+  if (req.files && req.files.length > 0) {
+    imagesArray = req.files.map(file => `/uploads/${file.filename}`);
+  }
+  
+  // Use first image as main image_path
+  const image_path = imagesArray.length > 0 ? imagesArray[0] : req.body.image_path;
 
   if (!title || !category || !description || !year) {
     res.status(400).json({ error: 'Missing required fields' });
     return;
   }
 
-  // First get the current project to check if there's an old image to delete
-  db.get("SELECT image_path FROM projects WHERE id = ?", [req.params.id], (err, row) => {
+  // First get the current project to check if there are old images to delete
+  db.get("SELECT image_path, images FROM projects WHERE id = ?", [req.params.id], (err, row) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -107,22 +123,31 @@ router.put('/:id', upload.single('image'), (req, res) => {
       return;
     }
 
-    // Delete old image if it exists and we're uploading a new one
-    if (row.image_path && req.file && row.image_path !== image_path) {
-      const oldImagePath = path.join(__dirname, '..', row.image_path);
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
+    // Delete old images if new ones are uploaded
+    if (req.files && req.files.length > 0) {
+      try {
+        const oldImages = JSON.parse(row.images || '[]');
+        oldImages.forEach(oldImagePath => {
+          if (oldImagePath) {
+            const fullPath = path.join(__dirname, '..', oldImagePath);
+            if (fs.existsSync(fullPath)) {
+              fs.unlinkSync(fullPath);
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Error deleting old images:', e);
       }
     }
 
     // Update the project
     const sql = `
       UPDATE projects 
-      SET title = ?, category = ?, image_path = ?, description = ?, year = ?
+      SET title = ?, category = ?, image_path = ?, description = ?, year = ?, location = ?, images = ?
       WHERE id = ?
     `;
 
-    db.run(sql, [title, category, image_path, description, year, req.params.id], function(err) {
+    db.run(sql, [title, category, image_path, description, year, location, JSON.stringify(imagesArray), req.params.id], function(err) {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
@@ -142,8 +167,8 @@ router.put('/:id', upload.single('image'), (req, res) => {
 
 // Delete project
 router.delete('/:id', (req, res) => {
-  // First get the project to check if there's an image to delete
-  db.get("SELECT image_path FROM projects WHERE id = ?", [req.params.id], (err, row) => {
+  // First get the project to check if there are images to delete
+  db.get("SELECT image_path, images FROM projects WHERE id = ?", [req.params.id], (err, row) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -153,12 +178,32 @@ router.delete('/:id', (req, res) => {
       return;
     }
 
-    // Delete the image file if it exists
-    if (row.image_path) {
-      const imagePath = path.join(__dirname, '..', row.image_path);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
+    // Delete all associated image files
+    try {
+      // Delete main image if it exists
+      if (row.image_path) {
+        const imagePath = path.join(__dirname, '..', row.image_path);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+          console.log(`Deleted main image: ${imagePath}`);
+        }
       }
+
+      // Delete all images from the images array
+      if (row.images) {
+        const imagesArray = JSON.parse(row.images);
+        imagesArray.forEach(imagePath => {
+          if (imagePath && imagePath !== row.image_path) { // Don't delete main image twice
+            const fullPath = path.join(__dirname, '..', imagePath);
+            if (fs.existsSync(fullPath)) {
+              fs.unlinkSync(fullPath);
+              console.log(`Deleted image: ${fullPath}`);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error deleting image files:', e);
     }
 
     // Delete the project from database
@@ -167,7 +212,7 @@ router.delete('/:id', (req, res) => {
         res.status(500).json({ error: err.message });
         return;
       }
-      res.json({ message: 'Project deleted successfully' });
+      res.json({ message: 'Project and all associated images deleted successfully' });
     });
   });
 });

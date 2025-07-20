@@ -1,112 +1,87 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Filter, Calendar, MapPin } from 'lucide-react';
+import { Eye, Filter, Calendar, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { projectsAPI } from '../services/api';
+import ProjectModal from '../components/ProjectModal';
 
 interface Project {
   id: string;
   title: string;
   category: string;
-  image: string;
   description: string;
   year: string;
+  location: string;
+  image_path: string;
+  images: string[];
 }
 
 const Projects = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { ref, inView } = useInView({
     threshold: 0.1,
     triggerOnce: true
   });
 
-  // Load projects from localStorage or use defaults
+  // Load projects from API
   useEffect(() => {
-    const savedProjects = localStorage.getItem('adminProjects');
-    if (savedProjects) {
-      setProjects(JSON.parse(savedProjects));
-    } else {
-      // Default projects
-      const defaultProjects: Project[] = [
-        {
-          id: '1',
-          title: "Modern Penthouse",
-          category: "residential",
-          image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg",
-          description: "Luxury penthouse with panoramic city views featuring contemporary design elements and premium finishes throughout.",
-          year: "2024"
-        },
-        {
-          id: '2',
-          title: "Corporate Headquarters",
-          category: "commercial",
-          image: "https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg",
-          description: "Contemporary office space design that promotes collaboration and productivity in a modern work environment.",
-          year: "2023"
-        },
-        {
-          id: '3',
-          title: "Boutique Hotel",
-          category: "hospitality",
-          image: "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg",
-          description: "Elegant hotel interior with local influences, creating a unique and memorable guest experience.",
-          year: "2024"
-        },
-        {
-          id: '4',
-          title: "Family Villa",
-          category: "residential",
-          image: "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg",
-          description: "Spacious family home with garden views, designed for comfort and modern living.",
-          year: "2023"
-        },
-        {
-          id: '5',
-          title: "Restaurant Design",
-          category: "hospitality",
-          image: "https://images.pexels.com/photos/1579253/pexels-photo-1579253.jpeg",
-          description: "Fine dining restaurant with intimate atmosphere, carefully crafted to enhance the culinary experience.",
-          year: "2024"
-        },
-        {
-          id: '6',
-          title: "Tech Startup Office",
-          category: "commercial",
-          image: "https://images.pexels.com/photos/1170412/pexels-photo-1170412.jpeg",
-          description: "Creative workspace for innovation, designed to inspire creativity and foster collaboration.",
-          year: "2023"
-        },
-        {
-          id: '7',
-          title: "Luxury Apartment",
-          category: "residential",
-          image: "https://images.pexels.com/photos/1648776/pexels-photo-1648776.jpeg",
-          description: "High-end apartment design with sophisticated finishes and thoughtful space planning.",
-          year: "2024"
-        },
-        {
-          id: '8',
-          title: "Retail Showroom",
-          category: "commercial",
-          image: "https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg",
-          description: "Modern retail space designed to showcase products and create an engaging shopping experience.",
-          year: "2023"
-        }
-      ];
-      setProjects(defaultProjects);
-    }
+    const loadProjects = async () => {
+      try {
+        setLoading(true);
+        const data = await projectsAPI.getAll();
+        // Parse images array for each project
+        const projectsWithImages = data.map((project: any) => ({
+          ...project,
+          images: project.images ? JSON.parse(project.images) : [project.image_path]
+        }));
+        setProjects(projectsWithImages);
+      } catch (err) {
+        console.error('Error loading projects:', err);
+        setProjects([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProjects();
   }, []);
 
   const filters = [
     { id: 'all', label: 'All Projects' },
     { id: 'residential', label: 'Residential' },
-    { id: 'commercial', label: 'Commercial' },
-    { id: 'hospitality', label: 'Hospitality' }
+    { id: 'commercial', label: 'Commercial' }
   ];
 
   const filteredProjects = activeFilter === 'all' 
     ? projects 
     : projects.filter(project => project.category === activeFilter);
+
+  const openProjectModal = (project: Project) => {
+    setSelectedProject(project);
+    setIsModalOpen(true);
+  };
+
+  const closeProjectModal = () => {
+    setIsModalOpen(false);
+    setSelectedProject(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white pt-24">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading projects...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -125,7 +100,7 @@ const Projects = () => {
       y: 0,
       transition: {
         duration: 0.8,
-        ease: "easeOut"
+        ease: "easeOut" as const
       }
     }
   };
@@ -216,7 +191,7 @@ const Projects = () => {
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img 
-                    src={project.image}
+                    src={`http://localhost:3001${project.images[0]}`}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
@@ -232,16 +207,24 @@ const Projects = () => {
                     <Calendar className="h-3 w-3" />
                     <span>{project.year}</span>
                   </div>
+
+                  {/* Image Counter Badge */}
+                  {project.images.length > 1 && (
+                    <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded-full text-sm">
+                      {project.images.length} images
+                    </div>
+                  )}
                   
                   {/* Hover Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <motion.button
+                      onClick={() => openProjectModal(project)}
                       className="bg-white text-black px-6 py-3 rounded-full font-medium flex items-center space-x-2 hover:bg-gray-100 transition-colors duration-300"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <span>View Details</span>
-                      <ExternalLink className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
+                      <span>View Gallery</span>
                     </motion.button>
                   </div>
                 </div>
@@ -254,15 +237,26 @@ const Projects = () => {
                     {project.description}
                   </p>
                   
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center text-gray-500 text-sm">
                       <MapPin className="h-4 w-4 mr-1" />
-                      <span>Hyderabad</span>
+                      <span>{project.location}</span>
                     </div>
                     <div className="text-sm font-medium text-black">
                       {project.year}
                     </div>
                   </div>
+
+                  {/* View Gallery Button */}
+                  <motion.button
+                    onClick={() => openProjectModal(project)}
+                    className="w-full bg-black text-white py-3 rounded-2xl font-medium hover:bg-gray-800 transition-colors duration-300 flex items-center justify-center space-x-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Eye className="h-4 w-4" />
+                    <span>View Gallery ({project.images.length})</span>
+                  </motion.button>
                 </div>
               </motion.div>
             ))}
@@ -318,6 +312,13 @@ const Projects = () => {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Project Modal */}
+      <ProjectModal
+        project={selectedProject}
+        isOpen={isModalOpen}
+        onClose={closeProjectModal}
+      />
     </div>
   );
 };

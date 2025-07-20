@@ -18,9 +18,11 @@ interface Project {
   title: string;
   category: string;
   image_path: string | null;
-  image?: File; // For form handling
+  images?: File[]; // For form handling - multiple files
   description: string;
   year: string;
+  location?: string;
+  imagesData?: string; // JSON string from database
 }
 
 interface BlogPost {
@@ -455,7 +457,8 @@ const Admin = () => {
         category: 'residential',
         image_path: null,
         description: '',
-        year: new Date().getFullYear().toString()
+        year: new Date().getFullYear().toString(),
+        location: 'Hyderabad'
       }
     );
 
@@ -464,10 +467,10 @@ const Admin = () => {
       onSave(formData);
     };
 
-    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        setFormData({ ...formData, image: file });
+    const handleImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length > 0) {
+        setFormData({ ...formData, images: files });
       }
     };
 
@@ -506,19 +509,31 @@ const Admin = () => {
                 />
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Category</label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
-              >
-                <option value="residential">Residential</option>
-                <option value="commercial">Commercial</option>
-                <option value="hospitality">Hospitality</option>
-              </select>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Location</label>
+                <input
+                  type="text"
+                  value={formData.location || ''}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
+                  placeholder="e.g., Hyderabad"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Category</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
+                >
+                  <option value="residential">Residential</option>
+                  <option value="commercial">Commercial</option>
+                </select>
+              </div>
             </div>
+
+
 
             <div>
               <label className="block text-sm font-medium mb-2">Description</label>
@@ -532,21 +547,41 @@ const Admin = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Project Image</label>
+              <label className="block text-sm font-medium mb-2">Project Images (Multiple)</label>
               <div className="space-y-4">
-                {(formData.image_path || formData.image) && (
-                  <img
-                    src={formData.image_path || (formData.image instanceof File ? URL.createObjectURL(formData.image) : '')}
-                    alt="Preview"
-                    className="w-full h-48 rounded-lg object-cover"
-                  />
+                {/* Preview existing images */}
+                {formData.image_path && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <img
+                      src={`http://localhost:3001${formData.image_path}`}
+                      alt="Main Preview"
+                      className="w-full h-32 rounded-lg object-cover"
+                    />
+                  </div>
                 )}
+                
+                {/* Preview new selected images */}
+                {formData.images && formData.images.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {formData.images.map((file, index) => (
+                      <img
+                        key={index}
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-32 rounded-lg object-cover"
+                      />
+                    ))}
+                  </div>
+                )}
+                
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleImageChange}
+                  multiple
+                  onChange={handleImagesChange}
                   className="w-full"
                 />
+                <p className="text-sm text-gray-500">You can select multiple images. The first image will be used as the main thumbnail.</p>
               </div>
             </div>
 
@@ -929,37 +964,61 @@ const Admin = () => {
           </div>
         ) : activeTab === 'projects' ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
-              <div key={project.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border">
-                <img
-                  src={project.image_path ? `http://localhost:3001${project.image_path}` : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"}
-                  alt={project.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-black">{project.title}</h3>
-                    <span className="text-sm text-gray-500">{project.year}</span>
+            {projects.map((project) => {
+              let images: string[] = [];
+              try {
+                images = project.imagesData ? JSON.parse(project.imagesData) : (project.image_path ? [project.image_path] : []);
+              } catch (e) {
+                images = project.image_path ? [project.image_path] : [];
+              }
+              const imageSrc = project.image_path 
+                ? `http://localhost:3001${project.image_path}` 
+                : (images.length > 0 ? `http://localhost:3001${images[0]}` : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg");
+              
+              return (
+                <div key={project.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border">
+                  <div className="relative">
+                    <img
+                      src={imageSrc}
+                      alt={project.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    {images.length > 1 && (
+                      <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
+                        {images.length} images
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600 mb-2 capitalize">{project.category}</p>
-                  <p className="text-gray-700 text-sm mb-4 line-clamp-2">{project.description}</p>
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      onClick={() => setEditingItem(project.id)}
-                      className="p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteProject(project.id)}
-                      className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-bold text-black">{project.title}</h3>
+                      <span className="text-sm text-gray-500">{project.year}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2 capitalize">{project.category}</p>
+                    <p className="text-gray-700 text-sm mb-4 line-clamp-2">{project.description}</p>
+                    {project.location && (
+                      <p className="text-xs text-gray-500 mb-2">📍 {project.location}</p>
+                    )}
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={() => setEditingItem(project.id)}
+                        className="p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg"
+                        title="Edit Project"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProject(project.id)}
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                        title="Delete Project"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,23 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Eye, ArrowRight, MapPin } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
 import { projectsAPI } from '../services/api';
+import ProjectModal from './ProjectModal';
 
 interface Project {
   id: string;
   title: string;
   category: string;
-  image_path: string | null;
   description: string;
   year: string;
+  location: string;
+  image_path: string;
+  images: string[];
 }
 
 const Portfolio = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { ref, inView } = useInView({
     threshold: 0.1,
     triggerOnce: true
@@ -29,62 +33,15 @@ const Portfolio = () => {
       try {
         setLoading(true);
         const data = await projectsAPI.getAll();
-        setProjects(data);
+        // Parse images array for each project
+        const projectsWithImages = data.map((project: any) => ({
+          ...project,
+          images: project.images ? JSON.parse(project.images) : [project.image_path]
+        }));
+        setProjects(projectsWithImages);
       } catch (err) {
         console.error('Error loading projects:', err);
-        setError('Failed to load projects');
-        // Fallback to default projects
-        const defaultProjects: Project[] = [
-          {
-            id: '1',
-            title: "Modern Penthouse",
-            category: "residential",
-            image_path: null,
-            description: "Luxury penthouse with panoramic city views",
-            year: "2024"
-          },
-          {
-            id: '2',
-            title: "Corporate Headquarters",
-            category: "commercial",
-            image_path: null,
-            description: "Contemporary office space design",
-            year: "2023"
-          },
-          {
-            id: '3',
-            title: "Boutique Hotel",
-            category: "hospitality",
-            image_path: null,
-            description: "Elegant hotel interior with local influences",
-            year: "2024"
-          },
-          {
-            id: '4',
-            title: "Family Villa",
-            category: "residential",
-            image_path: null,
-            description: "Spacious family home with garden views",
-            year: "2023"
-          },
-          {
-            id: '5',
-            title: "Restaurant Design",
-            category: "hospitality",
-            image_path: null,
-            description: "Fine dining restaurant with intimate atmosphere",
-            year: "2024"
-          },
-          {
-            id: '6',
-            title: "Tech Startup Office",
-            category: "commercial",
-            image_path: null,
-            description: "Creative workspace for innovation",
-            year: "2023"
-          }
-        ];
-        setProjects(defaultProjects);
+        setProjects([]);
       } finally {
         setLoading(false);
       }
@@ -96,13 +53,22 @@ const Portfolio = () => {
   const filters = [
     { id: 'all', label: 'All Projects' },
     { id: 'residential', label: 'Residential' },
-    { id: 'commercial', label: 'Commercial' },
-    { id: 'hospitality', label: 'Hospitality' }
+    { id: 'commercial', label: 'Commercial' }
   ];
 
   const filteredProjects = activeFilter === 'all' 
     ? projects 
     : projects.filter(project => project.category === activeFilter);
+
+  const openProjectModal = (project: Project) => {
+    setSelectedProject(project);
+    setIsModalOpen(true);
+  };
+
+  const closeProjectModal = () => {
+    setIsModalOpen(false);
+    setSelectedProject(null);
+  };
 
   if (loading) {
     return (
@@ -196,10 +162,7 @@ const Portfolio = () => {
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img 
-                    src={project.image_path 
-                      ? `http://localhost:3001${project.image_path}`
-                      : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"
-                    }
+                    src={`http://localhost:3001${project.images[0]}`}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
@@ -208,14 +171,22 @@ const Portfolio = () => {
                   {/* Hover Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <motion.button
+                      onClick={() => openProjectModal(project)}
                       className="bg-white text-black px-6 py-3 rounded-full font-medium flex items-center space-x-2 hover:bg-gray-100 transition-colors duration-300"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <span>View Project</span>
-                      <ExternalLink className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
+                      <span>View Gallery</span>
                     </motion.button>
                   </div>
+
+                  {/* Image Counter Badge */}
+                  {project.images.length > 1 && (
+                    <div className="absolute top-4 right-4 bg-black/70 text-white px-2 py-1 rounded-full text-sm">
+                      {project.images.length} images
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-6">
@@ -233,16 +204,25 @@ const Portfolio = () => {
                   </p>
                   
                   <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm text-gray-500">{project.location}</span>
+                    </div>
                     <span className="text-sm font-medium text-gray-900 capitalize bg-gray-100 px-3 py-1 rounded-full">
                       {project.category}
                     </span>
-                    <motion.button
-                      className="text-black hover:text-gray-700 transition-colors duration-300"
-                      whileHover={{ x: 5 }}
-                    >
-                      <ArrowRight className="h-5 w-5" />
-                    </motion.button>
                   </div>
+
+                  {/* View Gallery Button */}
+                  <motion.button
+                    onClick={() => openProjectModal(project)}
+                    className="w-full mt-4 bg-black text-white py-3 rounded-2xl font-medium hover:bg-gray-800 transition-colors duration-300 flex items-center justify-center space-x-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Eye className="h-4 w-4" />
+                    <span>View Gallery ({project.images.length})</span>
+                  </motion.button>
                 </div>
               </motion.div>
             ))}
@@ -256,6 +236,7 @@ const Portfolio = () => {
             transition={{ duration: 0.8, delay: 1.2 }}
           >
             <motion.button
+              onClick={() => window.location.href = '/projects'}
               className="bg-black text-white px-8 py-4 rounded-full font-medium hover:bg-gray-800 transition-colors duration-300 flex items-center space-x-2 mx-auto"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -266,6 +247,13 @@ const Portfolio = () => {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Project Modal */}
+      <ProjectModal
+        project={selectedProject}
+        isOpen={isModalOpen}
+        onClose={closeProjectModal}
+      />
     </section>
   );
 };
