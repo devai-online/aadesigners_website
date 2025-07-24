@@ -13,6 +13,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
 const session = require('express-session');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -26,6 +28,13 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = config.PORT;
+const HTTPS_PORT = 3443; // HTTPS port
+
+// SSL Configuration
+const sslOptions = {
+  key: fs.readFileSync(path.join(__dirname, '..', 'ssl', 'aa.key')),
+  cert: fs.readFileSync(path.join(__dirname, '..', 'ssl', 'aa.pem'))
+};
 
 // Security middleware - completely disable helmet for development
 // app.use(helmet());
@@ -78,7 +87,9 @@ app.use(cors({
       'http://aadesignerstudio.com',
       'https://aadesignerstudio.com',
       'http://aa.devai.online',
-      'https://aa.devai.online'
+      'https://aa.devai.online',
+      'http://dev.aadesigner.com',
+      'https://dev.aadesigner.com'
     ];
     
     if (allowedOrigins.includes(origin)) {
@@ -112,7 +123,9 @@ app.use((req, res, next) => {
     'http://aadesignerstudio.com',
     'https://aadesignerstudio.com',
     'http://aa.devai.online',
-    'https://aa.devai.online'
+    'https://aa.devai.online',
+    'http://dev.aadesigner.com',
+    'https://dev.aadesigner.com'
   ];
   
   console.log('CORS Debug - Origin:', origin, 'Method:', req.method, 'Path:', req.path);
@@ -223,14 +236,26 @@ const startServer = async () => {
     await initDatabase();
     await insertDefaultData();
     
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Server running on ${config.API_BASE_URL}`);
-      console.log(`📊 API endpoints:`);
+    // Start HTTP server
+    http.createServer(app).listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 HTTP Server running on ${config.API_BASE_URL}`);
+      console.log(`📊 HTTP API endpoints:`);
       console.log(`   - Testimonials: ${config.API_BASE_URL}/api/testimonials`);
       console.log(`   - Projects: ${config.API_BASE_URL}/api/projects`);
       console.log(`   - Blog Posts: ${config.API_BASE_URL}/api/blog`);
       console.log(`   - Health Check: ${config.API_BASE_URL}/api/health`);
     });
+
+    // Start HTTPS server
+    https.createServer(sslOptions, app).listen(HTTPS_PORT, '0.0.0.0', () => {
+      console.log(`🚀 HTTPS Server running on https://localhost:${HTTPS_PORT}`);
+      console.log(`📊 HTTPS API endpoints:`);
+      console.log(`   - Testimonials: https://localhost:${HTTPS_PORT}/api/testimonials`);
+      console.log(`   - Projects: https://localhost:${HTTPS_PORT}/api/projects`);
+      console.log(`   - Blog Posts: https://localhost:${HTTPS_PORT}/api/blog`);
+      console.log(`   - Health Check: https://localhost:${HTTPS_PORT}/api/health`);
+    });
+
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
