@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import OptimizedImage from './OptimizedImage';
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
+  const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
 
   const slides = [
     {
@@ -47,6 +51,51 @@ const Hero = () => {
       description: "Transforming spaces into masterpieces"
     }
   ];
+
+  // Preload images
+  useEffect(() => {
+    const preloadImages = async () => {
+      const imagePromises = slides.map((slide, index) => {
+        return new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            setLoadedImages(prev => new Set([...prev, index]));
+            resolve();
+          };
+          img.onerror = () => {
+            console.error(`Failed to load image: ${slide.image}`);
+            resolve();
+          };
+          img.src = slide.image;
+        });
+      });
+
+      await Promise.all(imagePromises);
+      setIsLoading(false);
+    };
+
+    preloadImages();
+  }, []);
+
+  // Preload next and previous images for smooth transitions
+  useEffect(() => {
+    const preloadAdjacentImages = () => {
+      const nextIndex = (currentSlide + 1) % slides.length;
+      const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+      
+      [nextIndex, prevIndex].forEach(index => {
+        if (!loadedImages.has(index)) {
+          const img = new Image();
+          img.onload = () => {
+            setLoadedImages(prev => new Set([...prev, index]));
+          };
+          img.src = slides[index].image;
+        }
+      });
+    };
+
+    preloadAdjacentImages();
+  }, [currentSlide, loadedImages]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -106,6 +155,13 @@ const Hero = () => {
           transition={{ duration: 1 }}
         >
           <div className="relative h-[50vh] md:h-[60vh] lg:h-[70vh] max-h-[600px] min-h-[400px] rounded-3xl overflow-hidden bg-gray-200 shadow-2xl">
+            {/* Loading State */}
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                <div className="w-12 h-12 border-4 border-gray-300 border-t-black rounded-full animate-spin"></div>
+              </div>
+            )}
+
             {/* Slides */}
             {slides.map((slide, index) => (
               <motion.div
@@ -117,11 +173,20 @@ const Hero = () => {
                 animate={{ scale: index === currentSlide ? 1 : 1.1 }}
                 transition={{ duration: 1 }}
               >
-                <img 
-                  src={slide.image} 
+                {/* Optimized Image with loading optimization */}
+                <OptimizedImage
+                  src={slide.image}
                   alt={slide.title}
                   className="w-full h-full object-cover object-center"
+                  loading={index <= 2 ? "eager" : "lazy"}
+                  onLoad={() => {
+                    setLoadedImages(prev => new Set([...prev, index]));
+                  }}
+                  onError={(e) => {
+                    console.error(`Failed to load image: ${slide.image}`);
+                  }}
                 />
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end">
                   <motion.div 
                     className="p-6 md:p-8 lg:p-12 text-white w-full"
