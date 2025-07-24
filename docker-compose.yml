@@ -25,7 +25,7 @@ services:
     build:
       context: .
       args:
-        - VITE_API_BASE_URL=${API_BASE_URL:-http://31.97.207.250:3001}
+        - VITE_API_BASE_URL=${FRONTEND_API_URL:-https://dev.aadesignerstudio.com}
     container_name: aadesigners-frontend
     ports:
       - "80:80"

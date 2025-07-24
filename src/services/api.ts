@@ -1,4 +1,5 @@
-const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+// Use relative URLs for API calls to work with nginx proxy
+const API_BASE_URL = '/api';
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
