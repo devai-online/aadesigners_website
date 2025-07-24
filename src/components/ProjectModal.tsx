@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Project } from '../data/projects';
-import { imagePresets } from '../utils/imageOptimizer';
 
 interface ProjectModalProps {
   project: Project | null;
@@ -44,7 +43,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
     preloadImages.forEach(index => {
       if (!loadedImages.has(index)) {
         const img = new Image();
-        img.src = imagePresets.large(images[index]);
+        img.src = `${import.meta.env.VITE_API_BASE_URL}${images[index]}`;
         img.onload = () => {
           setLoadedImages(prev => new Set([...prev, index]));
         };
@@ -86,7 +85,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
   // Ensure images is always an array
   const images = Array.isArray(project.images) ? project.images : [];
   
-  const fullImageUrl = images[currentImageIndex] ? imagePresets.large(images[currentImageIndex]) : "/placeholder-image.jpg";
+  const fullImageUrl = images[currentImageIndex] ? `${import.meta.env.VITE_API_BASE_URL}${images[currentImageIndex]}` : "/placeholder-image.jpg";
 
   const nextImage = () => {
     if (currentImageIndex < images.length - 1) {
