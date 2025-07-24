@@ -133,52 +133,55 @@ const Header = () => {
             )}
           </button>
 
-          {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <div className="md:hidden bg-white rounded-lg mt-2 py-4 shadow-lg border">
-              {navItems.map((item) => (
-                item.href.startsWith('#') ? (
-                  <button
-                    key={item.name}
-                    onClick={() => {
-                      handleNavClick(item.href);
-                      setIsMenuOpen(false);
-                    }}
-                    className={`block w-full text-left px-6 py-3 font-medium transition-colors duration-300 ${
-                      location.pathname === '/' && location.hash === item.href
-                        ? 'text-amber-900 bg-amber-50' 
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-amber-900'
-                    }`}
-                  >
-                    {item.name}
-                  </button>
-                ) : (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`block px-6 py-3 font-medium transition-colors duration-300 ${
-                      location.pathname === item.href 
-                        ? 'text-amber-900 bg-amber-50' 
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-amber-900'
-                    }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                )
-              ))}
-              <div className="px-6 pt-3">
-                <button 
-                  onClick={scrollToContact}
-                  className="w-full bg-amber-800 text-white px-5 py-2.5 rounded-full font-medium"
-                >
-                  Contact
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Mobile Navigation Dropdown */}
+      {isMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+            {navItems.map((item) => (
+              item.href.startsWith('#') ? (
+                <button
+                  key={item.name}
+                  onClick={() => {
+                    handleNavClick(item.href);
+                    setIsMenuOpen(false);
+                  }}
+                  className={`block w-full text-left py-3 font-medium transition-colors duration-300 ${
+                    location.pathname === '/' && location.hash === item.href
+                      ? 'text-amber-900 bg-amber-50 px-4 rounded-lg' 
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-amber-900 px-4 rounded-lg'
+                  }`}
+                >
+                  {item.name}
+                </button>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`block py-3 font-medium transition-colors duration-300 ${
+                    location.pathname === item.href 
+                      ? 'text-amber-900 bg-amber-50 px-4 rounded-lg' 
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-amber-900 px-4 rounded-lg'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              )
+            ))}
+            <div className="pt-3">
+              <button 
+                onClick={scrollToContact}
+                className="w-full bg-amber-800 text-white px-5 py-2.5 rounded-full font-medium hover:bg-amber-700 transition-colors duration-300"
+              >
+                Contact
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

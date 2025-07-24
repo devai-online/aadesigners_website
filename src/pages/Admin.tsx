@@ -117,6 +117,8 @@ const Admin = () => {
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   // Check if user is already authenticated (session storage)
@@ -240,24 +242,78 @@ const Admin = () => {
 
   // Handle project operations
   const handleAddProject = async (project: Project) => {
+    setUploading(true);
+    setUploadProgress(0);
+    setError(null);
+    
     try {
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
       const newProject = await projectsAPI.create(project);
-      setProjects([...projects, newProject]);
-      setShowAddForm(false);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      // Small delay to show completion
+      setTimeout(() => {
+        setProjects([...projects, newProject]);
+        setShowAddForm(false);
+        setUploading(false);
+        setUploadProgress(0);
+      }, 500);
+      
     } catch (err) {
       setError('Failed to add project');
       console.error('Error adding project:', err);
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
 
   const handleEditProject = async (project: Project) => {
+    setUploading(true);
+    setUploadProgress(0);
+    setError(null);
+    
     try {
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
       const updatedProject = await projectsAPI.update(project.id, project);
-      setProjects(projects.map(p => p.id === project.id ? updatedProject : p));
-      setEditingItem(null);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      // Small delay to show completion
+      setTimeout(() => {
+        setProjects(projects.map(p => p.id === project.id ? updatedProject : p));
+        setEditingItem(null);
+        setUploading(false);
+        setUploadProgress(0);
+      }, 500);
+      
     } catch (err) {
       setError('Failed to update project');
       console.error('Error updating project:', err);
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -1143,6 +1199,31 @@ const Admin = () => {
             onSave={handleEditBlogPost}
             onCancel={() => setEditingItem(null)}
           />
+        )}
+
+        {/* Upload Loading Overlay */}
+        {uploading && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+              <div className="mb-6">
+                <div className="w-16 h-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Uploading Project...</h3>
+                <p className="text-gray-600">Please wait while we upload your images</p>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                <div 
+                  className="bg-black h-3 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+              
+              <div className="text-sm text-gray-500">
+                {uploadProgress}% Complete
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
