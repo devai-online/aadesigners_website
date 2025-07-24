@@ -158,6 +158,17 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Test endpoint to debug routing
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API is working',
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    path: req.path,
+    headers: req.headers
+  });
+});
+
 
 
 // Simple image serving with CORS headers
@@ -168,9 +179,15 @@ app.use('/api/images', (req, res, next) => {
   next();
 }, express.static(path.join(__dirname, 'uploads')));
 
+// 404 handler
+app.use('*', (req, res) => {
+  console.log('404 - Route not found:', req.method, req.originalUrl);
+  res.status(404).json({ error: 'Route not found', method: req.method, path: req.originalUrl });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err.stack);
   res.status(500).json({ error: 'Something went wrong!' });
 });
 

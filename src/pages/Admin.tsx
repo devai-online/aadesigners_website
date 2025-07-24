@@ -127,6 +127,21 @@ const Admin = () => {
     if (authStatus === 'true') {
       setIsAuthenticated(true);
     }
+    
+    // Test API connection
+    const testAPI = async () => {
+      try {
+        const testUrl = `${import.meta.env.VITE_API_BASE_URL}/api/test`;
+        console.log('Testing API connection to:', testUrl);
+        const response = await fetch(testUrl);
+        const data = await response.json();
+        console.log('API test response:', data);
+      } catch (error) {
+        console.error('API test failed:', error);
+      }
+    };
+    
+    testAPI();
   }, []);
 
   // Load data from API when authenticated
@@ -162,8 +177,12 @@ const Admin = () => {
     e.preventDefault();
     setLoginError('');
     
+    const loginUrl = `${import.meta.env.VITE_API_BASE_URL}/api/admin/login`;
+    console.log('Login URL:', loginUrl);
+    console.log('Environment variable:', import.meta.env.VITE_API_BASE_URL);
+    
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/login`, {
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

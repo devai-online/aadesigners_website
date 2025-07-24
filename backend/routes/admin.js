@@ -5,6 +5,13 @@ const router = express.Router();
 
 // Admin authentication endpoint
 router.post('/login', checkNotAuthenticated, (req, res) => {
+  console.log('Admin login attempt:', { 
+    body: req.body, 
+    method: req.method, 
+    path: req.path,
+    headers: req.headers 
+  });
+  
   const { password } = req.body;
   const adminPassword = process.env.ADMIN_PASSWORD;
   
