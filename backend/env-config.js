@@ -25,7 +25,7 @@ const config = {
   // Rate Limiting
   RATE_LIMIT_WINDOW: process.env.RATE_LIMIT_WINDOW || 15 * 60 * 1000, // 15 minutes
   RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX || 100,
-  ADMIN_RATE_LIMIT_MAX: process.env.ADMIN_RATE_LIMIT_MAX || 5,
+  ADMIN_RATE_LIMIT_MAX: process.env.ADMIN_RATE_LIMIT_MAX || 50,
   
   // Session
   SESSION_MAX_AGE: process.env.SESSION_MAX_AGE || 24 * 60 * 60 * 1000, // 24 hours

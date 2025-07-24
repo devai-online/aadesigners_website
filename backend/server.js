@@ -64,7 +64,24 @@ app.use(session({
 
 // CORS configuration
 app.use(cors({
-  origin: ['http://98.130.15.198', 'http://98.130.15.198:80', 'http://localhost:3000', 'http://localhost:5173', '*'],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://98.130.15.198',
+      'http://98.130.15.198:80',
+      'http://localhost:3000',
+      'http://localhost:5173'
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept'],
@@ -73,13 +90,32 @@ app.use(cors({
 
 // Additional CORS headers for all routes
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'http://98.130.15.198',
+    'http://98.130.15.198:80',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ];
+  
+  console.log('CORS Debug - Origin:', origin, 'Method:', req.method, 'Path:', req.path);
+  
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    console.log('CORS: Allowed origin:', origin);
+  } else if (!origin) {
+    console.log('CORS: No origin header');
+  } else {
+    console.log('CORS: Blocked origin:', origin);
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Origin, Accept');
   res.header('Access-Control-Allow-Credentials', 'true');
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('CORS: Handling preflight request');
     res.sendStatus(200);
   } else {
     next();
