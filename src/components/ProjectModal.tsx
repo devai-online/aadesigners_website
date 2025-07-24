@@ -234,7 +234,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`w-4 h-4 rounded-full transition-all duration-300 border-2 ${
+                      className={`w-2.5 h-2.5 rounded-full transition-all duration-300 border ${
                         index === currentImageIndex 
                           ? 'bg-white border-white' 
                           : 'bg-white/30 border-white/50 hover:bg-white/50'

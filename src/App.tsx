@@ -4,6 +4,7 @@ import LoadingScreen from './components/LoadingScreen';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import WhatsAppButton from './components/WhatsAppButton';
 import Home from './pages/Home';
 import WhoWeAre from './pages/WhoWeAre';
 import WhatWeDo from './pages/WhatWeDo';
@@ -36,6 +37,7 @@ function App() {
           <Route path="/admin" element={<Admin />} />
         </Routes>
         <Footer />
+        <WhatsAppButton />
       </div>
     </Router>
   );

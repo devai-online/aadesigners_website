@@ -21,7 +21,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-black text-white py-16">
+    <footer className="bg-black text-white pb-0">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           
@@ -132,33 +132,32 @@ const Footer = () => {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Section */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
+      {/* White Strip */}
+      <div className="bg-white text-black py-6 mt-8">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center mb-6 md:mb-0">
+            <div className="flex items-center mb-4 md:mb-0">
               <img 
                 src="/FINAL LOGO PSD - R1.png" 
                 alt="AA Designer Studio" 
-                className="h-12 w-auto mr-4"
+                className="h-14 w-auto mr-3"
               />
-              <div>
-                <h3 className="text-xl font-bold text-white">AA Designer Studio</h3>
-                <p className="text-gray-400">Transforming Spaces with Precision</p>
-              </div>
+              <span className="text-lg font-semibold text-black">AA Designer Studio</span>
             </div>
             
             <div className="text-center md:text-right">
-              <p className="text-gray-400 mb-2">
+              <p className="text-gray-700 mb-1">
                 © 2024 AA Designer Studio. All rights reserved.
               </p>
-              <p className="text-gray-500">
+              <p className="text-gray-600 text-sm">
                 Designed with love ♥ and maintained by{' '}
                 <a 
                   href="https://devai.online" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-amber-400 hover:text-amber-300 transition-colors duration-300"
+                  className="text-amber-600 hover:text-amber-700 transition-colors duration-300 font-medium"
                 >
                   DevAI
                 </a>
