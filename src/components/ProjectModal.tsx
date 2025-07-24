@@ -12,13 +12,44 @@ interface ProjectModalProps {
 const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (isOpen) {
       setCurrentImageIndex(0);
       setIsZoomed(false);
+      setLoadedImages(new Set());
     }
   }, [isOpen]);
+
+  // Preload next and previous images
+  useEffect(() => {
+    if (!project || !isOpen) return;
+    
+    const images = Array.isArray(project.images) ? project.images : [];
+    const preloadImages = [];
+    
+    // Preload next image
+    if (currentImageIndex < images.length - 1) {
+      preloadImages.push(currentImageIndex + 1);
+    }
+    
+    // Preload previous image
+    if (currentImageIndex > 0) {
+      preloadImages.push(currentImageIndex - 1);
+    }
+    
+    preloadImages.forEach(index => {
+      if (!loadedImages.has(index)) {
+        const img = new Image();
+        img.src = `${import.meta.env.VITE_API_BASE_URL}${images[index]}`;
+        img.onload = () => {
+          setLoadedImages(prev => new Set([...prev, index]));
+        };
+      }
+    });
+  }, [currentImageIndex, project, isOpen, loadedImages]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -54,25 +85,23 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
   // Ensure images is always an array
   const images = Array.isArray(project.images) ? project.images : [];
   
-  console.log('ProjectModal received project:', project);
-  console.log('Project images:', images);
-  console.log('Current image index:', currentImageIndex);
-  console.log('Current image URL:', images[currentImageIndex]);
-  
   const fullImageUrl = images[currentImageIndex] ? `${import.meta.env.VITE_API_BASE_URL}${images[currentImageIndex]}` : "/placeholder-image.jpg";
-  console.log('Full image URL:', fullImageUrl);
-  console.log('Environment variable:', import.meta.env.VITE_API_BASE_URL);
-  console.log('Image path:', images[currentImageIndex]);
 
   const nextImage = () => {
     if (currentImageIndex < images.length - 1) {
+      setIsLoading(true);
       setCurrentImageIndex(currentImageIndex + 1);
+      // Reset loading after a short delay to allow image to load
+      setTimeout(() => setIsLoading(false), 100);
     }
   };
 
   const prevImage = () => {
     if (currentImageIndex > 0) {
+      setIsLoading(true);
       setCurrentImageIndex(currentImageIndex - 1);
+      // Reset loading after a short delay to allow image to load
+      setTimeout(() => setIsLoading(false), 100);
     }
   };
 
@@ -122,27 +151,31 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.2 }}
             >
-                          <img
-              src={fullImageUrl}
-              alt={`${project.title} - Image ${currentImageIndex + 1}`}
-              className={`max-w-full max-h-full object-contain transition-transform duration-300 cursor-pointer border-2 border-red-500 ${
-                isZoomed ? 'scale-150' : 'scale-100'
-              }`}
-              onClick={toggleZoom}
-              style={{ maxHeight: 'calc(100vh - 200px)', minHeight: '200px' }}
-              onError={(e) => {
-                console.error('Image failed to load:', fullImageUrl);
-                e.currentTarget.src = '/placeholder-image.jpg';
-              }}
-              onLoad={(e) => {
-                console.log('Image loaded successfully:', fullImageUrl);
-                console.log('Image dimensions:', e.currentTarget.naturalWidth, 'x', e.currentTarget.naturalHeight);
-                console.log('Image display dimensions:', e.currentTarget.offsetWidth, 'x', e.currentTarget.offsetHeight);
-                console.log('Image visible:', e.currentTarget.style.display, e.currentTarget.style.visibility);
-              }}
-            />
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-lg">
+                  <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                </div>
+              )}
+              <img
+                src={fullImageUrl}
+                alt={`${project.title} - Image ${currentImageIndex + 1}`}
+                className={`max-w-full max-h-full object-contain transition-transform duration-200 cursor-pointer ${
+                  isZoomed ? 'scale-150' : 'scale-100'
+                } ${isLoading ? 'opacity-50' : 'opacity-100'}`}
+                onClick={toggleZoom}
+                style={{ maxHeight: 'calc(100vh - 200px)', minHeight: '200px' }}
+                loading="eager"
+                onError={(e) => {
+                  console.error('Image failed to load:', fullImageUrl);
+                  e.currentTarget.src = '/placeholder-image.jpg';
+                }}
+                onLoad={() => {
+                  setIsLoading(false);
+                  setLoadedImages(prev => new Set([...prev, currentImageIndex]));
+                }}
+              />
             </motion.div>
 
             {/* Navigation Arrows */}
