@@ -4,16 +4,13 @@ console.log('Environment variables loaded:', {
   PORT: process.env.PORT || 'Using default (3001)',
   API_BASE_URL: process.env.API_BASE_URL || 'http://localhost:3001',
   JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
-  SESSION_SECRET: process.env.SESSION_SECRET ? 'Set' : 'Not set',
-  REDIS_URL: process.env.REDIS_URL ? 'Set' : 'Not set'
+  SESSION_SECRET: process.env.SESSION_SECRET ? 'Set' : 'Not set'
 });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const session = require('express-session');
-const RedisStore = require('connect-redis').default;
-const redis = require('redis');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { initDatabase, insertDefaultData } = require('./database');
@@ -46,36 +43,11 @@ const adminLimiter = rateLimit({
 });
 app.use('/api/admin', adminLimiter);
 
-// Initialize Redis client
-let redisClient;
-let sessionStore;
-
-// Initialize Redis and session store
-const initializeRedis = async () => {
-  try {
-    if (process.env.REDIS_URL) {
-      redisClient = redis.createClient({
-        url: process.env.REDIS_URL
-      });
-      
-      await redisClient.connect();
-      
-      sessionStore = new RedisStore({
-        client: redisClient,
-        prefix: 'aadesigners:session:'
-      });
-      
-      console.log('✅ Redis connected successfully');
-    } else {
-      console.log('⚠️  Redis URL not provided, using MemoryStore (not recommended for production)');
-    }
-  } catch (error) {
-    console.log('⚠️  Failed to connect to Redis, using MemoryStore:', error.message);
-  }
-};
+// Note: Using MemoryStore for sessions (Redis can be added later for production)
+console.log('ℹ️  Using MemoryStore for sessions (Redis can be added later for production)');
 
 // Session configuration
-const sessionConfig = {
+app.use(session({
   secret: process.env.SESSION_SECRET || 'fallback-secret-key',
   resave: false,
   saveUninitialized: false,
@@ -84,14 +56,7 @@ const sessionConfig = {
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
-};
-
-// Use Redis store if available, otherwise use MemoryStore
-if (sessionStore) {
-  sessionConfig.store = sessionStore;
-}
-
-app.use(session(sessionConfig));
+}));
 
 // Middleware - Allow all origins for development
 app.use(cors({
@@ -146,9 +111,6 @@ app.use((err, req, res, next) => {
 // Initialize database and start server
 const startServer = async () => {
   try {
-    // Initialize Redis first
-    await initializeRedis();
-    
     // Initialize database
     await initDatabase();
     await insertDefaultData();

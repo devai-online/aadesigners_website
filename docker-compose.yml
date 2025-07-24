@@ -1,15 +1,6 @@
 version: '3.8'
 
 services:
-  redis:
-    image: redis:7-alpine
-    container_name: aadesigners-redis
-    ports:
-      - "6379:6379"
-    networks:
-      - aadesigners-network
-    restart: unless-stopped
-
   backend:
     build: ./backend
     container_name: aadesigners-backend
@@ -22,14 +13,11 @@ services:
       - ADMIN_PASSWORD=admin123
       - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
       - SESSION_SECRET=your-super-secret-session-key-change-this-in-production
-      - REDIS_URL=redis://redis:6379
     volumes:
       - ./backend/uploads:/app/uploads
       - ./backend/database.db:/app/database.db
     networks:
       - aadesigners-network
-    depends_on:
-      - redis
     restart: unless-stopped
 
   frontend:
