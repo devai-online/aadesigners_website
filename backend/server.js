@@ -134,18 +134,30 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: config.MAX_FILE_SIZE }));
 app.use(express.urlencoded({ extended: true, limit: config.MAX_FILE_SIZE }));
 
-// Serve uploaded files with CORS headers
+// Serve uploaded files with CORS headers and caching
 app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   res.header('Cross-Origin-Resource-Policy', 'cross-origin');
   res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  
+  // Add caching headers for images
+  if (req.path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+    res.header('Cache-Control', 'public, max-age=31536000'); // 1 year cache
+    res.header('Expires', new Date(Date.now() + 31536000000).toUTCString());
+  }
+  
   next();
-}, express.static(path.join(__dirname, 'uploads')));
+}, express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '1y',
+  etag: true,
+  lastModified: true
+}));
 
-// Import authentication middleware
+// Import middleware
 const { requireAuth } = require('./middleware/auth');
+const imageOptimizer = require('./middleware/imageOptimizer');
 
 // Routes
 app.use('/api/testimonials', testimonialsRoutes);
@@ -179,13 +191,16 @@ app.get('/api/test', (req, res) => {
 
 
 
-// Simple image serving with CORS headers
+// Optimized image serving with CORS headers
 app.use('/api/images', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   next();
-}, express.static(path.join(__dirname, 'uploads')));
+}, imageOptimizer);
+
+// Fallback to static files for non-optimized images
+app.use('/api/images', express.static(path.join(__dirname, 'uploads')));
 
 // 404 handler
 app.use((req, res) => {

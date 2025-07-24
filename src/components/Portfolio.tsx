@@ -4,6 +4,7 @@ import { Eye, ArrowRight, MapPin } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
 import { projectsAPI } from '../services/api';
 import ProjectModal from './ProjectModal';
+import { imagePresets } from '../utils/imageOptimizer';
 
 interface Project {
   id: string;
@@ -173,7 +174,7 @@ const Portfolio = () => {
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img 
-                    src={project.images[0] ? `${import.meta.env.VITE_API_BASE_URL}${project.images[0]}` : "/placeholder-image.jpg"}
+                    src={project.images[0] ? imagePresets.medium(project.images[0]) : "/placeholder-image.jpg"}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
