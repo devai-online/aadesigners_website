@@ -76,7 +76,9 @@ app.use(cors({
       'http://dev.aadesignerstudio.com',
       'https://dev.aadesignerstudio.com',
       'http://aadesignerstudio.com',
-      'https://aadesignerstudio.com'
+      'https://aadesignerstudio.com',
+      'http://aa.devai.online',
+      'https://aa.devai.online'
     ];
     
     if (allowedOrigins.includes(origin)) {
@@ -108,7 +110,9 @@ app.use((req, res, next) => {
     'http://dev.aadesignerstudio.com',
     'https://dev.aadesignerstudio.com',
     'http://aadesignerstudio.com',
-    'https://aadesignerstudio.com'
+    'https://aadesignerstudio.com',
+    'http://aa.devai.online',
+    'https://aa.devai.online'
   ];
   
   console.log('CORS Debug - Origin:', origin, 'Method:', req.method, 'Path:', req.path);
