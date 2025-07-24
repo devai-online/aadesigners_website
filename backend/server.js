@@ -115,13 +115,13 @@ const startServer = async () => {
     await initDatabase();
     await insertDefaultData();
     
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
       console.log(`📊 API endpoints:`);
-      console.log(`   - Testimonials: http://localhost:${PORT}/api/testimonials`);
-      console.log(`   - Projects: http://localhost:${PORT}/api/projects`);
-      console.log(`   - Blog Posts: http://localhost:${PORT}/api/blog`);
-      console.log(`   - Health Check: http://localhost:${PORT}/api/health`);
+      console.log(`   - Testimonials: http://0.0.0.0:${PORT}/api/testimonials`);
+      console.log(`   - Projects: http://0.0.0.0:${PORT}/api/projects`);
+      console.log(`   - Blog Posts: http://0.0.0.0:${PORT}/api/blog`);
+      console.log(`   - Health Check: http://0.0.0.0:${PORT}/api/health`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
