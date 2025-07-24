@@ -8,9 +8,9 @@ echo "========================================"
 echo "Stopping containers..."
 docker compose down
 
-# Start with EC2 IP
-echo "Starting with EC2 IP..."
-API_BASE_URL=http://98.130.50.198:3001 docker compose up -d
+# Start containers (will use default EC2 IP)
+echo "Starting containers with default EC2 IP..."
+docker compose up -d
 
 echo "Waiting for services to start..."
 sleep 10
