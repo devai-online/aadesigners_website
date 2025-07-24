@@ -1,13 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import OptimizedImage from './OptimizedImage';
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
-  const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
 
   const slides = [
     {
@@ -51,51 +47,6 @@ const Hero = () => {
       description: "Transforming spaces into masterpieces"
     }
   ];
-
-  // Preload images
-  useEffect(() => {
-    const preloadImages = async () => {
-      const imagePromises = slides.map((slide, index) => {
-        return new Promise<void>((resolve) => {
-          const img = new Image();
-          img.onload = () => {
-            setLoadedImages(prev => new Set([...prev, index]));
-            resolve();
-          };
-          img.onerror = () => {
-            console.error(`Failed to load image: ${slide.image}`);
-            resolve();
-          };
-          img.src = slide.image;
-        });
-      });
-
-      await Promise.all(imagePromises);
-      setIsLoading(false);
-    };
-
-    preloadImages();
-  }, []);
-
-  // Preload next and previous images for smooth transitions
-  useEffect(() => {
-    const preloadAdjacentImages = () => {
-      const nextIndex = (currentSlide + 1) % slides.length;
-      const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
-      
-      [nextIndex, prevIndex].forEach(index => {
-        if (!loadedImages.has(index)) {
-          const img = new Image();
-          img.onload = () => {
-            setLoadedImages(prev => new Set([...prev, index]));
-          };
-          img.src = slides[index].image;
-        }
-      });
-    };
-
-    preloadAdjacentImages();
-  }, [currentSlide, loadedImages]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -155,13 +106,6 @@ const Hero = () => {
           transition={{ duration: 1 }}
         >
           <div className="relative h-[50vh] md:h-[60vh] lg:h-[70vh] max-h-[600px] min-h-[400px] rounded-3xl overflow-hidden bg-gray-200 shadow-2xl">
-            {/* Loading State */}
-            {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-                <div className="w-12 h-12 border-4 border-gray-300 border-t-black rounded-full animate-spin"></div>
-              </div>
-            )}
-
             {/* Slides */}
             {slides.map((slide, index) => (
               <motion.div
@@ -173,18 +117,11 @@ const Hero = () => {
                 animate={{ scale: index === currentSlide ? 1 : 1.1 }}
                 transition={{ duration: 1 }}
               >
-                {/* Optimized Image with loading optimization */}
-                <OptimizedImage
-                  src={slide.image}
+                <img 
+                  src={slide.image} 
                   alt={slide.title}
                   className="w-full h-full object-cover object-center"
                   loading={index <= 2 ? "eager" : "lazy"}
-                  onLoad={() => {
-                    setLoadedImages(prev => new Set([...prev, index]));
-                  }}
-                  onError={(e) => {
-                    console.error(`Failed to load image: ${slide.image}`);
-                  }}
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end">
@@ -291,40 +228,28 @@ const Hero = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1, delay: 0.5 }}
           >
-            <motion.div 
-              className="aspect-[4/3] rounded-3xl overflow-hidden bg-gray-200 shadow-xl"
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.3 }}
-            >
-              <img 
-                src="/1.png" 
-                alt="Modern Interior Design" 
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
-            
-            {/* Floating Card */}
-            <motion.div 
-              className="absolute -bottom-6 -left-6 bg-white/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/20"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 1.2 }}
-              whileHover={{ scale: 1.05, y: -5 }}
-            >
-              <div className="flex items-center space-x-4">
+            <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl p-8 lg:p-12 h-full min-h-[400px] flex items-center justify-center">
+              <div className="text-center">
                 <motion.div 
-                  className="w-12 h-12 bg-black rounded-full flex items-center justify-center"
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.5 }}
+                  className="w-24 h-24 bg-black rounded-full mx-auto mb-6 flex items-center justify-center"
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{ 
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
                 >
-                  <span className="text-white font-bold">AA</span>
+                  <span className="text-white text-2xl font-bold">AA</span>
                 </motion.div>
-                <div>
-                  <p className="font-semibold text-gray-900">AA Designer Studio</p>
-                  <p className="text-gray-600 text-sm">Interior Design Excellence</p>
-                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Design Excellence</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Every project is a testament to our commitment to quality, innovation, and timeless design principles.
+                </p>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         </div>
       </div>
