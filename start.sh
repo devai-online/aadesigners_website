@@ -23,9 +23,9 @@ detect_api_url() {
         return
     fi
     
-    # Fallback to localhost
-    echo "Using localhost fallback"
-    echo "http://localhost:3001"
+    # Fallback to default API URL
+    echo "Using default API URL"
+    echo "http://98.130.50.198:3001"
 }
 
 # Function to get domain from environment or detect
@@ -74,7 +74,7 @@ echo "SETUP COMPLETE!"
 echo "========================================"
 echo ""
 echo "Your website should be available at:"
-echo "- Local: http://localhost"
+echo "- Local: http://$(hostname -I | awk '{print $1}' | head -1)"
 echo "- Network: http://$(hostname -I | awk '{print $1}' | head -1)"
 echo "- EC2: http://$(curl -s --max-time 2 http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo 'Not available')"
 echo ""

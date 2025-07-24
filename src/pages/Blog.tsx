@@ -229,7 +229,7 @@ const Blog = () => {
                   <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gray-200">
                     <img 
                       src={filteredPosts[0].image_path 
-                        ? `http://localhost:3001${filteredPosts[0].image_path}`
+                        ? `${import.meta.env.VITE_API_BASE_URL}${filteredPosts[0].image_path}`
                         : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"
                       }
                       alt={filteredPosts[0].title}
@@ -292,7 +292,7 @@ const Blog = () => {
                 <div className="aspect-[4/3] overflow-hidden">
                   <img 
                     src={post.image_path 
-                      ? `http://localhost:3001${post.image_path}`
+                      ? `${import.meta.env.VITE_API_BASE_URL}${post.image_path}`
                       : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"
                     }
                     alt={post.title}

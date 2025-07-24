@@ -161,7 +161,7 @@ const Admin = () => {
     setLoginError('');
     
     try {
-      const response = await fetch('http://localhost:3001/api/admin/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -189,7 +189,7 @@ const Admin = () => {
   // Handle logout
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:3001/api/admin/logout', {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/logout`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -582,7 +582,7 @@ const Admin = () => {
                 {formData.image_path && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <img
-                      src={`http://localhost:3001${formData.image_path}`}
+                      src={`${import.meta.env.VITE_API_BASE_URL}${formData.image_path}`}
                       alt="Main Preview"
                       className="w-full h-32 rounded-lg object-cover"
                     />
@@ -958,7 +958,7 @@ const Admin = () => {
               <div key={testimonial.id} className="bg-white rounded-2xl p-6 shadow-sm border">
                 <div className="flex items-start space-x-4 mb-4">
                   <img
-                    src={testimonial.image_path ? `http://localhost:3001${testimonial.image_path}` : "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg"}
+                    src={testimonial.image_path ? `${import.meta.env.VITE_API_BASE_URL}${testimonial.image_path}` : "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg"}
                     alt={testimonial.name}
                     className="w-12 h-12 rounded-full object-cover"
                   />
@@ -1001,8 +1001,8 @@ const Admin = () => {
                 images = project.image_path ? [project.image_path] : [];
               }
               const imageSrc = project.image_path 
-                ? `http://localhost:3001${project.image_path}` 
-                : (images.length > 0 ? `http://localhost:3001${images[0]}` : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg");
+                ? `${import.meta.env.VITE_API_BASE_URL}${project.image_path}` 
+                : (images.length > 0 ? `${import.meta.env.VITE_API_BASE_URL}${images[0]}` : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg");
               
               return (
                 <div key={project.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border">
@@ -1054,7 +1054,7 @@ const Admin = () => {
             {blogPosts.map((post) => (
               <div key={post.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border">
                 <img
-                  src={post.image_path ? `http://localhost:3001${post.image_path}` : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"}
+                  src={post.image_path ? `${import.meta.env.VITE_API_BASE_URL}${post.image_path}` : "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg"}
                   alt={post.title}
                   className="w-full h-48 object-cover"
                 />

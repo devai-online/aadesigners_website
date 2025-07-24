@@ -178,7 +178,7 @@ const Testimonials = () => {
                       <div className="aspect-square rounded-2xl overflow-hidden bg-gray-200">
                         <img 
                           src={testimonials[currentTestimonial].image_path 
-                            ? `http://localhost:3001${testimonials[currentTestimonial].image_path}`
+                            ? `${import.meta.env.VITE_API_BASE_URL}${testimonials[currentTestimonial].image_path}`
                             : "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg"
                           }
                           alt={testimonials[currentTestimonial].name}
