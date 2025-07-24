@@ -35,7 +35,7 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit per file (reduced for better performance)
+    fileSize: 15 * 1024 * 1024, // 15MB limit per file (will be automatically compressed)
     files: 20 // Maximum 20 files
   }
 });
