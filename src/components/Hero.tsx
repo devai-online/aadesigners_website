@@ -228,28 +228,41 @@ const Hero = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1, delay: 0.5 }}
           >
-            <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl p-8 lg:p-12 h-full min-h-[400px] flex items-center justify-center">
-              <div className="text-center">
+            <motion.div 
+              className="aspect-[4/3] rounded-3xl overflow-hidden bg-gray-200 shadow-xl"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+            >
+              <img 
+                src="/1.png" 
+                alt="Modern Interior Design" 
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </motion.div>
+            
+            {/* Floating Card */}
+            <motion.div 
+              className="absolute -bottom-6 -left-6 bg-white/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/20"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 1.2 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+            >
+              <div className="flex items-center space-x-4">
                 <motion.div 
-                  className="w-24 h-24 bg-black rounded-full mx-auto mb-6 flex items-center justify-center"
-                  animate={{ 
-                    scale: [1, 1.1, 1],
-                    rotate: [0, 5, -5, 0]
-                  }}
-                  transition={{ 
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
+                  className="w-12 h-12 bg-black rounded-full flex items-center justify-center"
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.5 }}
                 >
-                  <span className="text-white text-2xl font-bold">AA</span>
+                  <span className="text-white font-bold">AA</span>
                 </motion.div>
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Design Excellence</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Every project is a testament to our commitment to quality, innovation, and timeless design principles.
-                </p>
+                <div>
+                  <p className="font-semibold text-gray-900">AA Designer Studio</p>
+                  <p className="text-gray-600 text-sm">Interior Design Excellence</p>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>
