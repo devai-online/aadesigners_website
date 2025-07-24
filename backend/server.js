@@ -69,8 +69,8 @@ app.use(cors({
     if (!origin) return callback(null, true);
     
     const allowedOrigins = [
-      'http://98.130.15.198',
-      'http://98.130.15.198:80',
+      'http://31.97.207.250',
+      'http://31.97.207.250:80',
       'http://localhost:3000',
       'http://localhost:5173'
     ];
@@ -92,8 +92,8 @@ app.use(cors({
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
-    'http://98.130.15.198',
-    'http://98.130.15.198:80',
+    'http://31.97.207.250',
+    'http://31.97.207.250:80',
     'http://localhost:3000',
     'http://localhost:5173'
   ];

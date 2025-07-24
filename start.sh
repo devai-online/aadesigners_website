@@ -25,7 +25,7 @@ detect_api_url() {
     
     # Fallback to default API URL
     echo "Using default API URL"
-    echo "http://98.130.15.198:3001"
+    echo "http://31.97.207.250:3001"
 }
 
 # Function to get domain from environment or detect

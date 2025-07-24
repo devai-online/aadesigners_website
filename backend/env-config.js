@@ -5,7 +5,7 @@ const config = {
   // Server Configuration
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: process.env.PORT || 3001,
-  API_BASE_URL: process.env.API_BASE_URL || 'http://98.130.15.198:3001',
+  API_BASE_URL: process.env.API_BASE_URL || 'http://31.97.207.250:3001',
   
   // Authentication
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin123',

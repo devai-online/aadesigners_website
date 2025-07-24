@@ -9,8 +9,8 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - API_BASE_URL=http://98.130.15.198:3001
-      - CORS_ORIGINS=http://98.130.15.198,http://98.130.15.198:80,http://localhost:3000,http://localhost:5173
+      - API_BASE_URL=http://31.97.207.250:3001
+      - CORS_ORIGINS=http://31.97.207.250,http://31.97.207.250:80,http://localhost:3000,http://localhost:5173
       - ADMIN_PASSWORD=admin123
       - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
       - SESSION_SECRET=your-super-secret-session-key-change-this-in-production
@@ -27,7 +27,7 @@ services:
     ports:
       - "80:80"
     environment:
-      - VITE_API_BASE_URL=http://98.130.15.198:3001
+      - VITE_API_BASE_URL=http://31.97.207.250:3001
     depends_on:
       - backend
     networks:
