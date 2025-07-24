@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { db } = require('../database');
 const { requireAuth } = require('../middleware/auth');
+const { optimizeImage, validateImageSize } = require('../middleware/imageOptimizer');
 
 const router = express.Router();
 
@@ -34,7 +35,7 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit per file
+    fileSize: 10 * 1024 * 1024, // 10MB limit per file (reduced for better performance)
     files: 20 // Maximum 20 files
   }
 });
@@ -74,7 +75,7 @@ router.post('/', requireAuth, (req, res, next) => {
     }
     next();
   });
-}, (req, res) => {
+}, optimizeImage, (req, res) => {
   try {
     console.log('Creating new project with data:', req.body);
     console.log('Uploaded files:', req.files);

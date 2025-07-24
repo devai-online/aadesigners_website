@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { db } = require('../database');
 const { requireAuth } = require('../middleware/auth');
+const { optimizeImage, validateImageSize } = require('../middleware/imageOptimizer');
 
 const router = express.Router();
 
@@ -26,6 +27,10 @@ const upload = multer({
     } else {
       cb(new Error('Only image files are allowed!'), false);
     }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit (reduced for better performance)
+    files: 1 // Only one file
   }
 });
 
@@ -56,7 +61,7 @@ router.get('/:id', (req, res) => {
 });
 
 // Create new blog post
-router.post('/', requireAuth, upload.single('image'), (req, res) => {
+router.post('/', requireAuth, upload.single('image'), optimizeImage, (req, res) => {
   const { title, excerpt, content, author, date, category, read_time, tags } = req.body;
   const image_path = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -88,7 +93,7 @@ router.post('/', requireAuth, upload.single('image'), (req, res) => {
 });
 
 // Update blog post
-router.put('/:id', requireAuth, upload.single('image'), (req, res) => {
+router.put('/:id', requireAuth, upload.single('image'), optimizeImage, (req, res) => {
   const { title, excerpt, content, author, date, category, read_time, tags } = req.body;
   const image_path = req.file ? `/uploads/${req.file.filename}` : req.body.image_path;
 
