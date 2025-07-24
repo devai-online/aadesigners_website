@@ -36,7 +36,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
           break;
         case 'ArrowRight':
           e.preventDefault();
-          if (project && currentImageIndex < project.images.length - 1) {
+          if (project && currentImageIndex < images.length - 1) {
             setCurrentImageIndex(currentImageIndex + 1);
           }
           break;
@@ -51,18 +51,21 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
 
   if (!project) return null;
 
-  console.log('ProjectModal received project:', project);
-  console.log('Project images:', project.images);
-  console.log('Current image index:', currentImageIndex);
-  console.log('Current image URL:', project.images[currentImageIndex]);
+  // Ensure images is always an array
+  const images = Array.isArray(project.images) ? project.images : [];
   
-          const fullImageUrl = project.images[currentImageIndex] ? `${import.meta.env.VITE_API_BASE_URL}${project.images[currentImageIndex]}` : "/placeholder-image.jpg";
+  console.log('ProjectModal received project:', project);
+  console.log('Project images:', images);
+  console.log('Current image index:', currentImageIndex);
+  console.log('Current image URL:', images[currentImageIndex]);
+  
+  const fullImageUrl = images[currentImageIndex] ? `${import.meta.env.VITE_API_BASE_URL}${images[currentImageIndex]}` : "/placeholder-image.jpg";
   console.log('Full image URL:', fullImageUrl);
   console.log('Environment variable:', import.meta.env.VITE_API_BASE_URL);
-  console.log('Image path:', project.images[currentImageIndex]);
+  console.log('Image path:', images[currentImageIndex]);
 
   const nextImage = () => {
-    if (currentImageIndex < project.images.length - 1) {
+    if (currentImageIndex < images.length - 1) {
       setCurrentImageIndex(currentImageIndex + 1);
     }
   };
@@ -143,7 +146,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
             </motion.div>
 
             {/* Navigation Arrows */}
-            {project.images.length > 1 && (
+            {images.length > 1 && (
               <>
                 <button
                   onClick={prevImage}
@@ -155,7 +158,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
                 </button>
                 <button
                   onClick={nextImage}
-                  disabled={currentImageIndex === project.images.length - 1}
+                  disabled={currentImageIndex === images.length - 1}
                   className="absolute right-6 top-1/2 -translate-y-1/2 w-16 h-16 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/90 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed border-2 border-white/30 shadow-lg"
                   title="Next Image (→)"
                 >
@@ -173,14 +176,14 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
             </button>
 
             {/* Image Counter */}
-            {project.images.length > 1 && (
+            {images.length > 1 && (
               <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 text-white text-sm font-medium border border-white/20">
-                {currentImageIndex + 1} / {project.images.length}
+                {currentImageIndex + 1} / {images.length}
               </div>
             )}
 
             {/* Bottom Navigation */}
-            {project.images.length > 1 && (
+            {images.length > 1 && (
               <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center space-x-4">
                 {/* Previous Button */}
                 <button
@@ -194,7 +197,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
 
                 {/* Thumbnail Dots */}
                 <div className="flex space-x-3 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2">
-                  {project.images.map((_, index) => (
+                  {images.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
@@ -211,7 +214,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
                 {/* Next Button */}
                 <button
                   onClick={nextImage}
-                  disabled={currentImageIndex === project.images.length - 1}
+                  disabled={currentImageIndex === images.length - 1}
                   className="w-12 h-12 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/90 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed border-2 border-white/30 shadow-lg"
                   title="Next Image"
                 >
