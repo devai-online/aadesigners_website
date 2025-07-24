@@ -72,7 +72,11 @@ app.use(cors({
       'http://31.97.207.250',
       'http://31.97.207.250:80',
       'http://localhost:3000',
-      'http://localhost:5173'
+      'http://localhost:5173',
+      'http://dev.aadesignerstudio.com',
+      'https://dev.aadesignerstudio.com',
+      'http://aadesignerstudio.com',
+      'https://aadesignerstudio.com'
     ];
     
     if (allowedOrigins.includes(origin)) {
@@ -95,7 +99,11 @@ app.use((req, res, next) => {
     'http://31.97.207.250',
     'http://31.97.207.250:80',
     'http://localhost:3000',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'http://dev.aadesignerstudio.com',
+    'https://dev.aadesignerstudio.com',
+    'http://aadesignerstudio.com',
+    'https://aadesignerstudio.com'
   ];
   
   console.log('CORS Debug - Origin:', origin, 'Method:', req.method, 'Path:', req.path);
