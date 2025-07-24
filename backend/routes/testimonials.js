@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { db } = require('../database');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -55,7 +56,7 @@ router.get('/:id', (req, res) => {
 });
 
 // Create new testimonial
-router.post('/', upload.single('image'), (req, res) => {
+router.post('/', requireAuth, upload.single('image'), (req, res) => {
   const { name, role, rating, text, project } = req.body;
   const image_path = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -87,7 +88,7 @@ router.post('/', upload.single('image'), (req, res) => {
 });
 
 // Update testimonial
-router.put('/:id', upload.single('image'), (req, res) => {
+router.put('/:id', requireAuth, upload.single('image'), (req, res) => {
   const { name, role, rating, text, project } = req.body;
   const image_path = req.file ? `/uploads/${req.file.filename}` : req.body.image_path;
 
@@ -141,7 +142,7 @@ router.put('/:id', upload.single('image'), (req, res) => {
 });
 
 // Delete testimonial
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireAuth, (req, res) => {
   // First get the testimonial to check if there's an image to delete
   db.get("SELECT image_path FROM testimonials WHERE id = ?", [req.params.id], (err, row) => {
     if (err) {

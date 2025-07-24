@@ -51,6 +51,16 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
 
   if (!project) return null;
 
+  console.log('ProjectModal received project:', project);
+  console.log('Project images:', project.images);
+  console.log('Current image index:', currentImageIndex);
+  console.log('Current image URL:', project.images[currentImageIndex]);
+  
+  const fullImageUrl = project.images[currentImageIndex] ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}${project.images[currentImageIndex]}` : "/placeholder-image.jpg";
+  console.log('Full image URL:', fullImageUrl);
+  console.log('Environment variable:', import.meta.env.VITE_API_BASE_URL);
+  console.log('Image path:', project.images[currentImageIndex]);
+
   const nextImage = () => {
     if (currentImageIndex < project.images.length - 1) {
       setCurrentImageIndex(currentImageIndex + 1);
@@ -112,13 +122,23 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
               transition={{ duration: 0.3 }}
             >
                           <img
-              src={`http://localhost:3001${project.images[currentImageIndex]}`}
+              src={fullImageUrl}
               alt={`${project.title} - Image ${currentImageIndex + 1}`}
-              className={`max-w-full max-h-full object-contain transition-transform duration-300 cursor-pointer ${
+              className={`max-w-full max-h-full object-contain transition-transform duration-300 cursor-pointer border-2 border-red-500 ${
                 isZoomed ? 'scale-150' : 'scale-100'
               }`}
               onClick={toggleZoom}
-              style={{ maxHeight: 'calc(100vh - 200px)' }}
+              style={{ maxHeight: 'calc(100vh - 200px)', minHeight: '200px' }}
+              onError={(e) => {
+                console.error('Image failed to load:', fullImageUrl);
+                e.currentTarget.src = '/placeholder-image.jpg';
+              }}
+              onLoad={(e) => {
+                console.log('Image loaded successfully:', fullImageUrl);
+                console.log('Image dimensions:', e.currentTarget.naturalWidth, 'x', e.currentTarget.naturalHeight);
+                console.log('Image display dimensions:', e.currentTarget.offsetWidth, 'x', e.currentTarget.offsetHeight);
+                console.log('Image visible:', e.currentTarget.style.display, e.currentTarget.style.visibility);
+              }}
             />
             </motion.div>
 

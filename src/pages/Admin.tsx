@@ -166,6 +166,7 @@ const Admin = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ password }),
       });
       
@@ -174,6 +175,7 @@ const Admin = () => {
       if (data.success) {
         setIsAuthenticated(true);
         sessionStorage.setItem('adminAuthenticated', 'true');
+        sessionStorage.setItem('adminToken', data.token);
         setLoginError('');
       } else {
         setLoginError('Incorrect password. Please try again.');
@@ -185,10 +187,20 @@ const Admin = () => {
   };
 
   // Handle logout
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('adminAuthenticated');
-    setPassword('');
+  const handleLogout = async () => {
+    try {
+      await fetch('http://localhost:3001/api/admin/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsAuthenticated(false);
+      sessionStorage.removeItem('adminAuthenticated');
+      sessionStorage.removeItem('adminToken');
+      setPassword('');
+    }
   };
 
   // Handle testimonial operations

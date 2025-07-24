@@ -1,7 +1,15 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/api`;
+
+// Helper function to get auth headers
+const getAuthHeaders = () => {
+  const token = sessionStorage.getItem('adminToken');
+  return {
+    'Authorization': token ? `Bearer ${token}` : '',
+  };
+};
 
 // Helper function to handle API responses
-const handleResponse = async (response) => {
+const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Something went wrong');
@@ -10,7 +18,7 @@ const handleResponse = async (response) => {
 };
 
 // Helper function to create FormData for file uploads
-const createFormData = (data) => {
+const createFormData = (data: any) => {
   const formData = new FormData();
   Object.keys(data).forEach(key => {
     if (data[key] !== null && data[key] !== undefined) {
@@ -38,15 +46,17 @@ export const testimonialsAPI = {
     return handleResponse(response);
   },
 
-  getById: async (id) => {
+  getById: async (id: string) => {
     const response = await fetch(`${API_BASE_URL}/testimonials/${id}`);
     return handleResponse(response);
   },
 
-  create: async (testimonial) => {
+  create: async (testimonial: any) => {
     const formData = createFormData(testimonial);
     const response = await fetch(`${API_BASE_URL}/testimonials`, {
       method: 'POST',
+      headers: getAuthHeaders(),
+      credentials: 'include',
       body: formData,
     });
     return handleResponse(response);
@@ -56,6 +66,8 @@ export const testimonialsAPI = {
     const formData = createFormData(testimonial);
     const response = await fetch(`${API_BASE_URL}/testimonials/${id}`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
+      credentials: 'include',
       body: formData,
     });
     return handleResponse(response);
@@ -64,6 +76,8 @@ export const testimonialsAPI = {
   delete: async (id) => {
     const response = await fetch(`${API_BASE_URL}/testimonials/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse(response);
   },
@@ -85,6 +99,8 @@ export const projectsAPI = {
     const formData = createFormData(project);
     const response = await fetch(`${API_BASE_URL}/projects`, {
       method: 'POST',
+      headers: getAuthHeaders(),
+      credentials: 'include',
       body: formData,
     });
     return handleResponse(response);
@@ -94,6 +110,8 @@ export const projectsAPI = {
     const formData = createFormData(project);
     const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
+      credentials: 'include',
       body: formData,
     });
     return handleResponse(response);
@@ -102,6 +120,8 @@ export const projectsAPI = {
   delete: async (id) => {
     const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse(response);
   },
@@ -123,6 +143,8 @@ export const blogAPI = {
     const formData = createFormData(blogPost);
     const response = await fetch(`${API_BASE_URL}/blog`, {
       method: 'POST',
+      headers: getAuthHeaders(),
+      credentials: 'include',
       body: formData,
     });
     return handleResponse(response);
@@ -132,6 +154,8 @@ export const blogAPI = {
     const formData = createFormData(blogPost);
     const response = await fetch(`${API_BASE_URL}/blog/${id}`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
+      credentials: 'include',
       body: formData,
     });
     return handleResponse(response);
@@ -140,6 +164,8 @@ export const blogAPI = {
   delete: async (id) => {
     const response = await fetch(`${API_BASE_URL}/blog/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse(response);
   },

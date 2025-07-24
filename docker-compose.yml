@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: aadesigners-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - API_BASE_URL=http://localhost:3001
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/database.db:/app/database.db
+    networks:
+      - aadesigners-network
+    restart: unless-stopped
+
+  frontend:
+    build: .
+    container_name: aadesigners-frontend
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:3001
+    depends_on:
+      - backend
+    networks:
+      - aadesigners-network
+    restart: unless-stopped
+
+networks:
+  aadesigners-network:
+    driver: bridge
+
+volumes:
+  uploads:
+    driver: local 

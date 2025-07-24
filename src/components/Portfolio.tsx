@@ -34,10 +34,21 @@ const Portfolio = () => {
         setLoading(true);
         const data = await projectsAPI.getAll();
         // Parse images array for each project
-        const projectsWithImages = data.map((project: any) => ({
-          ...project,
-          images: project.images ? JSON.parse(project.images) : [project.image_path]
-        }));
+        const projectsWithImages = data.map((project: any) => {
+          let images = [project.image_path]; // fallback
+          try {
+            if (project.images) {
+              images = JSON.parse(project.images);
+            }
+          } catch (error) {
+            console.error('Error parsing images for project:', project.title, error);
+          }
+          console.log('Project images for', project.title, ':', images);
+          return {
+            ...project,
+            images: images
+          };
+        });
         setProjects(projectsWithImages);
       } catch (err) {
         console.error('Error loading projects:', err);
@@ -162,7 +173,7 @@ const Portfolio = () => {
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img 
-                    src={`http://localhost:3001${project.images[0]}`}
+                    src={project.images[0] ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}${project.images[0]}` : "/placeholder-image.jpg"}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />

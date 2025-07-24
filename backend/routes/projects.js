@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { db } = require('../database');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -55,7 +56,7 @@ router.get('/:id', (req, res) => {
 });
 
 // Create new project
-router.post('/', upload.array('images', 10), (req, res) => {
+router.post('/', requireAuth, upload.array('images', 10), (req, res) => {
   const { title, category, description, year, location } = req.body;
   
   // Handle multiple uploaded images
@@ -95,7 +96,7 @@ router.post('/', upload.array('images', 10), (req, res) => {
 });
 
 // Update project
-router.put('/:id', upload.array('images', 10), (req, res) => {
+router.put('/:id', requireAuth, upload.array('images', 10), (req, res) => {
   const { title, category, description, year, location } = req.body;
   
   // Handle multiple uploaded images
@@ -166,7 +167,7 @@ router.put('/:id', upload.array('images', 10), (req, res) => {
 });
 
 // Delete project
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireAuth, (req, res) => {
   // First get the project to check if there are images to delete
   db.get("SELECT image_path, images FROM projects WHERE id = ?", [req.params.id], (err, row) => {
     if (err) {
