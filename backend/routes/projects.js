@@ -34,8 +34,8 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-    files: 10 // Maximum 10 files
+    fileSize: 50 * 1024 * 1024, // 50MB limit per file
+    files: 20 // Maximum 20 files
   }
 });
 
@@ -67,7 +67,7 @@ router.get('/:id', (req, res) => {
 
 // Create new project
 router.post('/', requireAuth, (req, res, next) => {
-  upload.array('images', 10)(req, res, (err) => {
+  upload.array('images', 20)(req, res, (err) => {
     if (err) {
       console.error('Multer error:', err);
       return res.status(400).json({ error: err.message });
@@ -132,22 +132,36 @@ router.post('/', requireAuth, (req, res, next) => {
 });
 
 // Update project
-router.put('/:id', requireAuth, upload.array('images', 10), (req, res) => {
-  const { title, category, description, year, location } = req.body;
-  
-  // Handle multiple uploaded images
-  let imagesArray = [];
-  if (req.files && req.files.length > 0) {
-    imagesArray = req.files.map(file => `/uploads/${file.filename}`);
-  }
-  
-  // Use first image as main image_path
-  const image_path = imagesArray.length > 0 ? imagesArray[0] : req.body.image_path;
+router.put('/:id', requireAuth, (req, res, next) => {
+  upload.array('images', 20)(req, res, (err) => {
+    if (err) {
+      console.error('Multer error in update:', err);
+      return res.status(400).json({ error: err.message });
+    }
+    next();
+  });
+}, (req, res) => {
+  try {
+    console.log('Updating project with data:', req.body);
+    console.log('Uploaded files:', req.files);
+    
+    const { title, category, description, year, location } = req.body;
+    
+    // Handle multiple uploaded images
+    let imagesArray = [];
+    if (req.files && req.files.length > 0) {
+      imagesArray = req.files.map(file => `/uploads/${file.filename}`);
+      console.log('Processed images array:', imagesArray);
+    }
+    
+    // Use first image as main image_path
+    const image_path = imagesArray.length > 0 ? imagesArray[0] : req.body.image_path;
 
-  if (!title || !category || !description || !year) {
-    res.status(400).json({ error: 'Missing required fields' });
-    return;
-  }
+    if (!title || !category || !description || !year) {
+      console.log('Missing required fields:', { title, category, description, year });
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+    }
 
   // First get the current project to check if there are old images to delete
   db.get("SELECT image_path, images FROM projects WHERE id = ?", [req.params.id], (err, row) => {
@@ -200,6 +214,10 @@ router.put('/:id', requireAuth, upload.array('images', 10), (req, res) => {
       });
     });
   });
+  } catch (error) {
+    console.error('Unexpected error in project update:', error);
+    res.status(500).json({ error: 'Something went wrong!' });
+  }
 });
 
 // Delete project
