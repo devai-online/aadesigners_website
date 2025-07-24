@@ -27,7 +27,7 @@ const Footer = () => {
           
           {/* Our Studio */}
           <div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent mb-6">Our Studio</h3>
+            <h3 className="text-xl font-bold text-amber-600 mb-6">Our Studio</h3>
             <div className="space-y-4">
               <div>
                 <h4 className="text-lg font-semibold text-white mb-2">AA Designer Studio</h4>
@@ -44,7 +44,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent mb-6">Quick Links</h3>
+            <h3 className="text-xl font-bold text-amber-600 mb-6">Quick Links</h3>
             <div className="space-y-3">
               <Link 
                 to="/who-we-are" 
@@ -75,7 +75,7 @@ const Footer = () => {
 
           {/* Services */}
           <div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent mb-6">Services</h3>
+            <h3 className="text-xl font-bold text-amber-600 mb-6">Services</h3>
             <div className="space-y-3 text-gray-300">
               <p>Residential Design</p>
               <p>Commercial Spaces</p>
@@ -88,7 +88,7 @@ const Footer = () => {
 
           {/* Contact Us */}
           <div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent mb-6">Contact Us</h3>
+            <h3 className="text-xl font-bold text-amber-600 mb-6">Contact Us</h3>
             <div className="space-y-4">
               <div className="flex items-center space-x-3 text-gray-300">
                 <Phone className="h-5 w-5 flex-shrink-0" />

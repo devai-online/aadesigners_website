@@ -75,17 +75,17 @@ const Header = () => {
       isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white/90'
     }`}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex justify-between items-center py-6">
+        <div className="flex justify-between items-center py-4">
           <Link to="/" className="flex items-center">
             <img 
               src="/image.png" 
               alt="AA Designer Studio" 
-              className="h-24 w-auto"
+              className="h-20 w-auto"
             />
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-12">
+          <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               item.href.startsWith('#') ? (
                 <button
@@ -115,7 +115,7 @@ const Header = () => {
             ))}
             <button 
               onClick={scrollToContact}
-              className="bg-amber-800 text-white px-6 py-3 rounded-full font-medium tracking-wide hover:bg-amber-700 transition-colors duration-300"
+              className="bg-amber-800 text-white px-5 py-2.5 rounded-full font-medium tracking-wide hover:bg-amber-700 transition-colors duration-300"
             >
               Contact
             </button>
@@ -170,7 +170,7 @@ const Header = () => {
               <div className="px-6 pt-3">
                 <button 
                   onClick={scrollToContact}
-                  className="w-full bg-amber-800 text-white px-6 py-3 rounded-full font-medium"
+                  className="w-full bg-amber-800 text-white px-5 py-2.5 rounded-full font-medium"
                 >
                   Contact
                 </button>
