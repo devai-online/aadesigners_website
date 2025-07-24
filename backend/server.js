@@ -94,6 +94,11 @@ app.use(cors({
 
 // Additional CORS headers for all routes
 app.use((req, res, next) => {
+  // Skip CORS logging for uploads to reduce noise
+  if (req.path.startsWith('/uploads/')) {
+    return next();
+  }
+  
   const origin = req.headers.origin;
   const allowedOrigins = [
     'http://31.97.207.250',
@@ -136,11 +141,19 @@ app.use(express.urlencoded({ extended: true, limit: config.MAX_FILE_SIZE }));
 
 // Serve uploaded files with CORS headers
 app.use('/uploads', (req, res, next) => {
+  // Allow all origins for static files
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   res.header('Cross-Origin-Resource-Policy', 'cross-origin');
   res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  
+  // Handle preflight requests for uploads
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+  
   next();
 }, express.static(path.join(__dirname, 'uploads')));
 
