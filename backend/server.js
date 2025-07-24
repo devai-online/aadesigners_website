@@ -1,11 +1,14 @@
+// Load environment variables (dotenv for local development, Docker env for production)
 require('dotenv').config();
-console.log('Environment variables loaded:', {
-  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ? 'Set' : 'Not set',
-  PORT: process.env.PORT || 'Using default (3001)',
-  API_BASE_URL: process.env.API_BASE_URL || 'http://localhost:3001',
-  JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
-  SESSION_SECRET: process.env.SESSION_SECRET ? 'Set' : 'Not set'
-});
+
+// Load centralized configuration
+const config = require('./env-config');
+
+console.log('🚀 AA Designers Backend Starting...');
+console.log('Environment:', config.NODE_ENV);
+console.log('Port:', config.PORT);
+console.log('API Base URL:', config.API_BASE_URL);
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -22,23 +25,23 @@ const blogRoutes = require('./routes/blog');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = config.PORT;
 
 // Security middleware - completely disable helmet for development
 // app.use(helmet());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: config.RATE_LIMIT_WINDOW,
+  max: config.RATE_LIMIT_MAX,
   message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
 
 // Admin-specific rate limiting
 const adminLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  windowMs: config.RATE_LIMIT_WINDOW,
+  max: config.ADMIN_RATE_LIMIT_MAX,
   message: 'Too many admin requests from this IP, please try again later.'
 });
 app.use('/api/admin', adminLimiter);
@@ -48,25 +51,34 @@ console.log('ℹ️  Using MemoryStore for sessions (Redis can be added later fo
 
 // Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback-secret-key',
+  secret: config.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: false, // Set to true in production with HTTPS
+    secure: config.SESSION_SECURE,
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: config.SESSION_MAX_AGE,
+    sameSite: 'lax' // Better for cross-domain requests
   }
 }));
 
-// Middleware - Allow all origins for development
+// CORS configuration
 app.use(cors({
-  origin: true, // Allow all origins
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow all origins for now (you can restrict this later)
+    callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Body parsing middleware
+app.use(express.json({ limit: config.MAX_FILE_SIZE }));
+app.use(express.urlencoded({ extended: true, limit: config.MAX_FILE_SIZE }));
 
 // Serve uploaded files with CORS headers
 app.use('/uploads', (req, res, next) => {
