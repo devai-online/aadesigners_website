@@ -485,6 +485,7 @@ const Admin = () => {
         title: '',
         category: 'residential',
         image_path: null,
+        images: [], // Initialize images as empty array
         description: '',
         year: new Date().getFullYear().toString(),
         location: 'Hyderabad'
@@ -590,7 +591,7 @@ const Admin = () => {
                 )}
                 
                 {/* Preview new selected images */}
-                {formData.images && formData.images.length > 0 && (
+                {formData.images && Array.isArray(formData.images) && formData.images.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {formData.images.map((file, index) => (
                       <img

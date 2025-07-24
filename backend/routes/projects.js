@@ -10,22 +10,32 @@ const router = express.Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    const uploadPath = path.join(__dirname, '..', 'uploads');
+    console.log('Upload destination:', uploadPath);
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'project-' + uniqueSuffix + path.extname(file.originalname));
+    const filename = 'project-' + uniqueSuffix + path.extname(file.originalname);
+    console.log('Generated filename:', filename);
+    cb(null, filename);
   }
 });
 
 const upload = multer({ 
   storage: storage,
   fileFilter: (req, file, cb) => {
+    console.log('Processing file:', file.originalname, 'MIME type:', file.mimetype);
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
+      console.log('Rejected file:', file.originalname, 'Invalid MIME type:', file.mimetype);
       cb(new Error('Only image files are allowed!'), false);
     }
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 10 // Maximum 10 files
   }
 });
 
@@ -56,43 +66,69 @@ router.get('/:id', (req, res) => {
 });
 
 // Create new project
-router.post('/', requireAuth, upload.array('images', 10), (req, res) => {
-  const { title, category, description, year, location } = req.body;
-  
-  // Handle multiple uploaded images
-  let imagesArray = [];
-  if (req.files && req.files.length > 0) {
-    imagesArray = req.files.map(file => `/uploads/${file.filename}`);
-  }
-  
-  // Use first image as main image_path
-  const image_path = imagesArray.length > 0 ? imagesArray[0] : null;
-
-  if (!title || !category || !description || !year) {
-    res.status(400).json({ error: 'Missing required fields' });
-    return;
-  }
-
-  const sql = `
-    INSERT INTO projects (title, category, image_path, description, year, location, images)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  db.run(sql, [title, category, image_path, description, year, location, JSON.stringify(imagesArray)], function(err) {
+router.post('/', requireAuth, (req, res, next) => {
+  upload.array('images', 10)(req, res, (err) => {
     if (err) {
-      res.status(500).json({ error: err.message });
-      return;
+      console.error('Multer error:', err);
+      return res.status(400).json({ error: err.message });
+    }
+    next();
+  });
+}, (req, res) => {
+  try {
+    console.log('Creating new project with data:', req.body);
+    console.log('Uploaded files:', req.files);
+    
+    const { title, category, description, year, location } = req.body;
+    
+    // Handle multiple uploaded images
+    let imagesArray = [];
+    if (req.files && req.files.length > 0) {
+      imagesArray = req.files.map(file => `/uploads/${file.filename}`);
+      console.log('Processed images array:', imagesArray);
     }
     
-    // Get the created project
-    db.get("SELECT * FROM projects WHERE id = ?", [this.lastID], (err, row) => {
+    // Use first image as main image_path
+    const image_path = imagesArray.length > 0 ? imagesArray[0] : null;
+
+    if (!title || !category || !description || !year) {
+      console.log('Missing required fields:', { title, category, description, year });
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+    }
+
+    const sql = `
+      INSERT INTO projects (title, category, image_path, description, year, location, images)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const params = [title, category, image_path, description, year, location, JSON.stringify(imagesArray)];
+    console.log('SQL parameters:', params);
+
+    db.run(sql, params, function(err) {
       if (err) {
+        console.error('Database error:', err);
         res.status(500).json({ error: err.message });
         return;
       }
-      res.status(201).json(row);
+      
+      console.log('Project created with ID:', this.lastID);
+      
+      // Get the created project
+      db.get("SELECT * FROM projects WHERE id = ?", [this.lastID], (err, row) => {
+        if (err) {
+          console.error('Error fetching created project:', err);
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        console.log('Created project:', row);
+        res.status(201).json(row);
+      });
     });
-  });
+  } catch (error) {
+    console.error('Unexpected error in project creation:', error);
+    res.status(500).json({ error: 'Something went wrong!' });
+  }
 });
 
 // Update project
