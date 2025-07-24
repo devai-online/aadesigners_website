@@ -1,3 +1,8 @@
+require('dotenv').config();
+console.log('Environment variables loaded:', {
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ? 'Set' : 'Not set',
+  PORT: process.env.PORT || 'Using default (3001)'
+});
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -7,6 +12,7 @@ const { initDatabase, insertDefaultData } = require('./database');
 const testimonialsRoutes = require('./routes/testimonials');
 const projectsRoutes = require('./routes/projects');
 const blogRoutes = require('./routes/blog');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,6 +29,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/testimonials', testimonialsRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/blog', blogRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

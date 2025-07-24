@@ -108,8 +108,7 @@ const Admin = () => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   
-  // Admin password - you can change this to your preferred password
-  const ADMIN_PASSWORD = 'aadesigner2024';
+  // Admin password is now stored securely in backend environment variables
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -157,14 +156,31 @@ const Admin = () => {
   }, [isAuthenticated]);
 
   // Handle login
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('adminAuthenticated', 'true');
-      setLoginError('');
-    } else {
-      setLoginError('Incorrect password. Please try again.');
+    setLoginError('');
+    
+    try {
+      const response = await fetch('http://localhost:3001/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('adminAuthenticated', 'true');
+        setLoginError('');
+      } else {
+        setLoginError('Incorrect password. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setLoginError('Connection error. Please check if the backend server is running.');
     }
   };
 
