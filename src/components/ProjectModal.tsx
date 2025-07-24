@@ -56,7 +56,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose })
   console.log('Current image index:', currentImageIndex);
   console.log('Current image URL:', project.images[currentImageIndex]);
   
-  const fullImageUrl = project.images[currentImageIndex] ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}${project.images[currentImageIndex]}` : "/placeholder-image.jpg";
+          const fullImageUrl = project.images[currentImageIndex] ? `${import.meta.env.VITE_API_BASE_URL}${project.images[currentImageIndex]}` : "/placeholder-image.jpg";
   console.log('Full image URL:', fullImageUrl);
   console.log('Environment variable:', import.meta.env.VITE_API_BASE_URL);
   console.log('Image path:', project.images[currentImageIndex]);

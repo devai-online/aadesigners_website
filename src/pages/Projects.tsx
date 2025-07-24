@@ -202,7 +202,7 @@ const Projects = () => {
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img 
-                    src={project.images[0] ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}${project.images[0]}` : "/placeholder-image.jpg"}
+                    src={project.images[0] ? `${import.meta.env.VITE_API_BASE_URL}${project.images[0]}` : "/placeholder-image.jpg"}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
