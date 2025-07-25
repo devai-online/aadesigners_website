@@ -141,7 +141,7 @@ router.put('/:id', requireAuth, (req, res, next) => {
     }
     next();
   });
-}, (req, res) => {
+}, optimizeImage, (req, res) => {
   try {
     console.log('Updating project with data:', req.body);
     console.log('Uploaded files:', req.files);
@@ -192,6 +192,19 @@ router.put('/:id', requireAuth, (req, res, next) => {
       }
     }
 
+    // Preserve existing images if no new images are uploaded
+    let finalImagesArray = imagesArray;
+    if (req.files && req.files.length === 0) {
+      // No new images uploaded, keep existing images
+      try {
+        finalImagesArray = JSON.parse(row.images || '[]');
+        console.log('Preserving existing images:', finalImagesArray);
+      } catch (e) {
+        console.error('Error parsing existing images:', e);
+        finalImagesArray = [];
+      }
+    }
+
     // Update the project
     const sql = `
       UPDATE projects 
@@ -199,7 +212,7 @@ router.put('/:id', requireAuth, (req, res, next) => {
       WHERE id = ?
     `;
 
-    db.run(sql, [title, category, image_path, description, year, location, JSON.stringify(imagesArray), req.params.id], function(err) {
+    db.run(sql, [title, category, image_path, description, year, location, JSON.stringify(finalImagesArray), req.params.id], function(err) {
       if (err) {
         res.status(500).json({ error: err.message });
         return;

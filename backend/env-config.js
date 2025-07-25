@@ -20,7 +20,7 @@ const config = {
   
   // File Uploads
   UPLOAD_PATH: process.env.UPLOAD_PATH || './uploads',
-  MAX_FILE_SIZE: process.env.MAX_FILE_SIZE || '15mb',
+  MAX_FILE_SIZE: process.env.MAX_FILE_SIZE || '20mb',
   
   // Rate Limiting
   RATE_LIMIT_WINDOW: process.env.RATE_LIMIT_WINDOW || 15 * 60 * 1000, // 15 minutes
