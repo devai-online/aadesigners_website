@@ -124,8 +124,40 @@ const Admin = () => {
   // Check if user is already authenticated (session storage)
   useEffect(() => {
     const authStatus = sessionStorage.getItem('adminAuthenticated');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
+    const token = sessionStorage.getItem('adminToken');
+    
+    if (authStatus === 'true' && token) {
+      // Verify token with backend
+      const verifyAuth = async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/verify`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          const data = await response.json();
+          
+          if (data.authenticated) {
+            setIsAuthenticated(true);
+          } else {
+            // Token is invalid, clear authentication
+            sessionStorage.removeItem('adminAuthenticated');
+            sessionStorage.removeItem('adminToken');
+            setIsAuthenticated(false);
+          }
+        } catch (error) {
+          console.error('Auth verification failed:', error);
+          // Clear authentication on error
+          sessionStorage.removeItem('adminAuthenticated');
+          sessionStorage.removeItem('adminToken');
+          setIsAuthenticated(false);
+        }
+      };
+      
+      verifyAuth();
     }
     
     // Test API connection
@@ -210,6 +242,7 @@ const Admin = () => {
   // Handle logout
   const handleLogout = async () => {
     try {
+      // Call backend logout endpoint
       await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/logout`, {
         method: 'POST',
         credentials: 'include',
@@ -217,10 +250,16 @@ const Admin = () => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // Clear all authentication state
       setIsAuthenticated(false);
       sessionStorage.removeItem('adminAuthenticated');
       sessionStorage.removeItem('adminToken');
+      localStorage.removeItem('adminAuthenticated');
+      localStorage.removeItem('adminToken');
       setPassword('');
+      
+      // Force page reload to ensure complete logout
+      window.location.reload();
     }
   };
 

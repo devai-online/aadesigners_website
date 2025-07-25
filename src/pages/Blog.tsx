@@ -263,14 +263,13 @@ const Blog = () => {
                           <span>{filteredPosts[0].read_time}</span>
                         </div>
                       </div>
-                      <motion.button
+                      <Link
+                        to={`/blog/${filteredPosts[0].id}`}
                         className="bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors duration-300 flex items-center space-x-2"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
                       >
                         <span>Read More</span>
                         <ArrowRight className="h-4 w-4" />
-                      </motion.button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -323,12 +322,12 @@ const Blog = () => {
                       <User className="h-4 w-4" />
                       <span>{post.author}</span>
                     </div>
-                    <motion.button
+                    <Link
+                      to={`/blog/${post.id}`}
                       className="text-black hover:text-gray-700 transition-colors duration-300"
-                      whileHover={{ x: 5 }}
                     >
                       <ArrowRight className="h-5 w-5" />
-                    </motion.button>
+                    </Link>
                   </div>
                 </div>
               </motion.article>

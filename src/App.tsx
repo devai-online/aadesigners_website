@@ -10,6 +10,7 @@ import WhoWeAre from './pages/WhoWeAre';
 import WhatWeDo from './pages/WhatWeDo';
 import Projects from './pages/Projects';
 import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
 import Admin from './pages/Admin';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path="/what-we-do" element={<WhatWeDo />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:id" element={<BlogDetail />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
         <Footer />
